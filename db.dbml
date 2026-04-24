@@ -1,0 +1,62 @@
+Table User {
+  id bigint pk
+  full_name varchar(80) [not null]
+  email varchar(50) [not null, unique]
+  role UserRole [not null]
+  evaluation_mode EvaluationMode [not null, default: EvaluationMode.AIAutomated]
+  password varchar(120)
+  created_at date [default: 'CURRENT_TIMESTAMP']
+}
+
+
+Table Course {
+  id bigint pk
+  title varchar(60) [not null]
+  description text [null]
+  user_id bigint [ref: > User.id, not null] // Only user with Teacher role is accepted
+  created_at date [default: 'CURRENT_TIMESTAMP']
+}
+
+Table Homework {
+  id bigint pk
+  course_id bigint [ref: > Course.id, not null]
+  description text [not null]
+  created_at date [default: 'CURRENT_TIMESTAMP']
+}
+
+Table Assignment {
+  id bigint pk
+  homework_id bigint [ref: > Homework.id, not null]
+  user_id bigint [ref: > User.id] // Only user with student role can be accepted
+  body text [not null]
+  status HomeworkStatus [not null, default: HomeworkStatus.Processing]
+  created_at date [default: 'CURRENT_TIMESTAMP']
+}
+
+Table Evaluation {
+  id bigint pk
+  assignment_id bigint [ref: > Assignment.id, not null]
+  feedback text [null]
+  score int [not null]
+  user_id bigint [ref: > User.id] // only Teacher role is accepted
+  created_at date [default: 'CURRENT_TIMESTAMP']
+}
+
+
+Enum UserRole {
+  Student
+  Admin
+  Teacher
+}
+
+Enum HomeworkStatus {
+  Processing
+  ReviewPending
+  Graded
+}
+
+Enum EvaluationMode {
+  AIAutomated
+  PartialAssisted
+  Manual
+}
