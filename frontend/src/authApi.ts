@@ -13,7 +13,7 @@ const HOMEWORKS_API_BASE = '/api/homeworks';
 
 async function parseJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    let message = 'Request failed.';
+    let message = "So'rov bajarilmadi.";
 
     try {
       const body = (await response.json()) as { message?: string | string[] };
@@ -24,7 +24,7 @@ async function parseJson<T>(response: Response): Promise<T> {
         message = body.message;
       }
     } catch {
-      message = 'Request failed.';
+      message = "So'rov bajarilmadi.";
     }
 
     throw new Error(message);
@@ -77,7 +77,7 @@ export async function logout(): Promise<void> {
   });
 
   if (!response.ok) {
-    throw new Error('Unable to log out right now.');
+    throw new Error("Hozir tizimdan chiqib bo'lmadi.");
   }
 }
 

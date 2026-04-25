@@ -48,12 +48,12 @@ export function ProfilePanel({ appState }: { appState: AppState }) {
         evaluationMode: profile.role === 'teacher' ? evaluationMode : undefined,
       });
       setPassword('');
-      setMessage('Profile updated successfully.');
+      setMessage('Profil muvaffaqiyatli yangilandi.');
     } catch (caughtError) {
       const nextMessage =
         caughtError instanceof Error
           ? caughtError.message
-          : 'Unable to update profile.';
+          : "Profilni yangilab bo'lmadi.";
       setMessage(nextMessage);
     } finally {
       setBusy(false);
@@ -64,12 +64,12 @@ export function ProfilePanel({ appState }: { appState: AppState }) {
     <section className="panel profile-panel">
       <form className="stack-form" onSubmit={handleSubmit}>
         <label>
-          Full name
+          To'liq ism
           <input value={fullName} onChange={(event) => setFullName(event.target.value)} />
         </label>
 
         <label>
-          Email
+          Elektron pochta
           <input
             type="email"
             value={email}
@@ -78,10 +78,10 @@ export function ProfilePanel({ appState }: { appState: AppState }) {
         </label>
 
         <label>
-          New password
+          Yangi parol
           <input
             type="password"
-            placeholder="Leave blank to keep the current password"
+            placeholder="Joriy parolni saqlash uchun bo'sh qoldiring"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
@@ -89,16 +89,16 @@ export function ProfilePanel({ appState }: { appState: AppState }) {
 
         {profile.role === 'teacher' ? (
           <label>
-            Evaluation mode
+            Baholash rejimi
             <select
               value={evaluationMode}
               onChange={(event) =>
                 setEvaluationMode(event.target.value as TeacherEvaluationMode)
               }
             >
-              <option value="ai_automated">AI automated</option>
-              <option value="partial_assisted">Partial assisted</option>
-              <option value="manual">Manual</option>
+              <option value="ai_automated">AI avtomatik</option>
+              <option value="partial_assisted">Qisman yordamchi</option>
+              <option value="manual">Qo'lda</option>
             </select>
           </label>
         ) : null}
@@ -106,7 +106,7 @@ export function ProfilePanel({ appState }: { appState: AppState }) {
         {message ? <p className="inline-message">{message}</p> : null}
 
         <button className="primary-button" disabled={busy} type="submit">
-          {busy ? 'Saving profile...' : 'Save profile'}
+          {busy ? 'Profil saqlanmoqda...' : 'Profilni saqlash'}
         </button>
       </form>
     </section>

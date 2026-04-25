@@ -19,7 +19,7 @@ export function AssignmentDetailPage({ appState }: { appState: AppState }) {
   const course = appState.courses.find((item) => item.id === parsedCourseId);
 
   if (!homework || !course || !canAccessCourse(currentUser, course)) {
-    return <NotFoundState message="This homework is not available for your account." />;
+    return <NotFoundState message="Bu uy vazifasi akkauntingiz uchun mavjud emas." />;
   }
 
   const homeworkAssignments = appState.assignments.filter(
@@ -29,26 +29,26 @@ export function AssignmentDetailPage({ appState }: { appState: AppState }) {
   return (
     <div className="page-stack">
       <Link className="back-link" to={`/dashboard/courses/${course.id}`}>
-        Back to {course.title}
+        {course.title} sahifasiga qaytish
       </Link>
 
       <PageHeading
-        title={`Homework #${homework.id}`}
+        title={`Uy vazifasi #${homework.id}`}
         description={homework.description}
       />
 
       <div className="hero-stats hero-stats--compact">
         <MetricCard
-          label="Attempt cap"
+          label="Urinish limiti"
           value={String(MAX_HOMEWORK_ATTEMPTS)}
-          hint="Per student"
+          hint="Har bir talaba uchun"
         />
         <MetricCard
-          label="Attempts"
+          label="Urinishlar"
           value={String(homeworkAssignments.length)}
-          hint="Tracked student submissions"
+          hint="Kuzatilgan talabalar topshiriqlari"
         />
-        <MetricCard label="Polling" value="4s" hint="Frontend refresh rhythm for v1" />
+        <MetricCard label="Yangilanish" value="4s" hint="v1 uchun frontend yangilanish oralig'i" />
       </div>
 
       {currentUser.role === 'student' ? (

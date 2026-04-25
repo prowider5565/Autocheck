@@ -23,7 +23,7 @@ export function StudentAssignmentView({
   const [extractedText, setExtractedText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(
-    'Image OCR will be wired to tesseract.js next. For now, uploads simulate extracted text so the flow is testable.',
+    "Keyingi bosqichda rasm OCR'i tesseract.js bilan ulanadi. Hozircha yuklangan fayllar ajratilgan matnni taqlid qiladi.",
   );
   const [refreshTick, setRefreshTick] = useState(0);
 
@@ -65,13 +65,13 @@ export function StudentAssignmentView({
     if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
       const content = await file.text();
       setExtractedText(content);
-      setStatusMessage('TXT file loaded and normalized into submission text.');
+      setStatusMessage('TXT fayl yuklandi va topshirish matniga moslashtirildi.');
       return;
     }
 
     setExtractedText(`OCR preview extracted from ${file.name}.`);
     setStatusMessage(
-      'Image attached. The current frontend demo simulates OCR text before real tesseract.js wiring.',
+      "Rasm biriktirildi. Hozirgi frontend demo haqiqiy tesseract.js ulanishidan oldin OCR matnini taqlid qiladi.",
     );
   }
 
@@ -86,13 +86,13 @@ export function StudentAssignmentView({
       sourceType === 'text' ? textValue.trim() : extractedText.trim();
 
     if (!normalizedText) {
-      setStatusMessage('Please provide text or upload a file that produces extracted text.');
+      setStatusMessage("Iltimos, matn kiriting yoki ajratilgan matn beradigan fayl yuklang.");
       return;
     }
 
     try {
       setSubmitting(true);
-      setStatusMessage('Submitting your homework for evaluation now.');
+      setStatusMessage("Uy vazifangiz baholash uchun yuborilmoqda.");
 
       await appState.submitAssignment({
         homeworkId: homework.id,
@@ -106,7 +106,7 @@ export function StudentAssignmentView({
       setFileName('');
       setExtractedText('');
       setStatusMessage(
-        'Attempt submitted and evaluated by Gemini. You are being returned to the course homework list.',
+        "Urinish yuborildi va Gemini tomonidan baholandi. Siz kursdagi uy vazifalari ro'yxatiga qaytarilasiz.",
       );
 
       window.setTimeout(() => {
@@ -116,7 +116,7 @@ export function StudentAssignmentView({
       setStatusMessage(
         caughtError instanceof Error
           ? caughtError.message
-          : 'Unable to submit the homework right now.',
+          : "Hozir uy vazifasini yuborib bo'lmadi.",
       );
     } finally {
       setSubmitting(false);
@@ -127,16 +127,15 @@ export function StudentAssignmentView({
     <div className="content-grid">
       <section className="panel">
         <div className="panel__header">
-          <h2>Submit a new attempt</h2>
+          <h2>Yangi urinish yuborish</h2>
           <p>
-            Students can only send the next attempt after the previous one is fully
-            graded. The latest graded result becomes the visible score.
+            Talabalar keyingi urinishni faqat avvalgi urinish to'liq baholangandan keyin yubora oladi. So'nggi baholangan natija ko'rinadigan ball bo'ladi.
           </p>
         </div>
 
         <form className="stack-form" onSubmit={handleSubmit}>
           <label>
-            Submission type
+            Yuborish turi
             <select
               disabled={submitting}
               onChange={(event) => {
@@ -146,26 +145,26 @@ export function StudentAssignmentView({
               }}
               value={sourceType}
             >
-              <option value="text">Direct text</option>
-              <option value="image">Image upload</option>
-              <option value="txt_file">TXT file</option>
+              <option value="text">To'g'ridan-to'g'ri matn</option>
+              <option value="image">Rasm yuklash</option>
+              <option value="txt_file">TXT fayl</option>
             </select>
           </label>
 
           {sourceType === 'text' ? (
             <label>
-              Submission text
+              Yuboriladigan matn
               <textarea
                 disabled={submitting}
                 onChange={(event) => setTextValue(event.target.value)}
-                placeholder="Write your homework response here..."
+                placeholder="Uy vazifasi javobingizni shu yerga yozing..."
                 rows={8}
                 value={textValue}
               />
             </label>
           ) : (
             <label>
-              Upload file
+              Fayl yuklash
               <input
                 accept={sourceType === 'image' ? 'image/*' : '.txt,text/plain'}
                 disabled={submitting}
@@ -177,7 +176,7 @@ export function StudentAssignmentView({
 
           {sourceType !== 'text' && extractedText ? (
             <label>
-              Extracted text preview
+              Ajratilgan matn ko'rinishi
               <textarea readOnly rows={6} value={extractedText} />
             </label>
           ) : null}
@@ -194,13 +193,13 @@ export function StudentAssignmentView({
           </div>
 
           <button className="primary-button" disabled={!canSubmit || submitting} type="submit">
-            {submitting ? 'Submitting...' : 'Submit attempt'}
+            {submitting ? 'Yuborilmoqda...' : 'Urinishni yuborish'}
           </button>
 
           {!canSubmit && latestAssignment ? (
             <p className="inline-message inline-message--warning">
-              Attempt {latestAssignment.attemptNumber} is still {latestAssignment.status}.
-              Wait for evaluation before sending the next one.
+              {latestAssignment.attemptNumber}-urinish hali {latestAssignment.status === 'processing' ? 'jarayonda' : latestAssignment.status === 'review_pending' ? "ko'rib chiqilmoqda" : 'baholangan'}.
+              Keyingi urinishni yuborishdan oldin baholash tugashini kuting.
             </p>
           ) : null}
         </form>
@@ -208,15 +207,15 @@ export function StudentAssignmentView({
 
       <section className="panel">
         <div className="panel__header">
-          <h2>Attempt history</h2>
-          <p>Polling refresh tick: {refreshTick}</p>
+          <h2>Urinishlar tarixi</h2>
+          <p>Yangilanish hisobi: {refreshTick}</p>
         </div>
 
         <div className="attempt-list">
           {studentAssignments.length === 0 ? (
             <EmptyState
-              title="No attempts yet"
-              description="Your first upload will appear here with a processing status."
+              title="Hali urinishlar yo'q"
+              description="Birinchi yuklashingiz shu yerda jarayon holati bilan ko'rinadi."
             />
           ) : (
             studentAssignments.map((assignment) => (

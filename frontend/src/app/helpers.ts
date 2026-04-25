@@ -35,26 +35,26 @@ export function canAccessCourse(user: User, course: Course) {
 
 export function getCoursesTitle(role: Role) {
   if (role === 'student') {
-    return 'All available courses';
+    return 'Barcha mavjud kurslar';
   }
 
   if (role === 'teacher') {
-    return 'Courses you own and manage';
+    return 'Siz yuritadigan va boshqaradigan kurslar';
   }
 
-  return 'Course workspace';
+  return 'Kurslar maydoni';
 }
 
 export function getCoursesDescription(role: Role) {
   if (role === 'student') {
-    return 'Open a course to review homework descriptions, submit your work, and track evaluation updates.';
+    return "Topshiriq tavsiflarini ko'rish, javob yuborish va baholash yangilanishlarini kuzatish uchun kursni oching.";
   }
 
   if (role === 'teacher') {
-    return 'Create homeworks, edit descriptions, and inspect student assignment attempts inside your courses.';
+    return "Kurslaringiz ichida vazifalar yarating, tavsiflarni tahrirlang va talabalar urinishlarini ko'rib chiqing.";
   }
 
-  return 'The current phase is focused on course and homework flows.';
+  return "Joriy bosqich kurslar va uy vazifalari oqimiga qaratilgan.";
 }
 
 export function getStudentHomeworkAssignments(
@@ -95,7 +95,7 @@ export function generateEvaluationDraft(assignment: Assignment, homework: Homewo
     (assignment.attemptNumber % 3) +
     (assignment.extractedText.length % 12) / 10;
   const score = Math.min(10, Number(baseScore.toFixed(1)));
-  const feedbackSource = `Solid response to the homework. Tighten the explanation and make the reasoning easier to verify. Homework context: ${homework.description}`;
+  const feedbackSource = `Vazifaga yaxshi javob berilgansiz. Izohni yanada aniqroq qiling va fikr yuritishni tekshirishni osonlashtiring. Vazifa mazmuni: ${homework.description}`;
 
   return {
     score,
@@ -110,7 +110,7 @@ export function trimToSixtyWords(text: string) {
 }
 
 export function formatTimestamp(timestamp: string) {
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat('uz-UZ', {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(timestamp));

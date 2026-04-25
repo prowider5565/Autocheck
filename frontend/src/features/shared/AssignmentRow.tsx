@@ -25,12 +25,12 @@ export function AssignmentRow({
 
   let statusCell = (
     <td className="homework-table__cell">
-      <span className="homework-table__muted">{MAX_HOMEWORK_ATTEMPTS} attempts max</span>
+      <span className="homework-table__muted">Maksimal {MAX_HOMEWORK_ATTEMPTS} ta urinish</span>
     </td>
   );
   let metricsCell = (
     <td className="homework-table__cell">
-      <span className="homework-table__muted">Description-based homework</span>
+      <span className="homework-table__muted">Tavsif asosidagi uy vazifasi</span>
     </td>
   );
 
@@ -45,13 +45,13 @@ export function AssignmentRow({
     metricsCell = (
       <td className="homework-table__cell">
         <span className="homework-table__muted">
-          {studentAssignments.length}/{MAX_HOMEWORK_ATTEMPTS} attempts used
+          {studentAssignments.length}/{MAX_HOMEWORK_ATTEMPTS} urinish ishlatilgan
         </span>
       </td>
     );
     statusCell = (
       <td className="homework-table__cell">
-        {latest ? <StatusPill status={latest.status} /> : <span className="homework-table__muted">No attempts yet</span>}
+        {latest ? <StatusPill status={latest.status} /> : <span className="homework-table__muted">Hali urinish yo'q</span>}
       </td>
     );
   }
@@ -66,12 +66,12 @@ export function AssignmentRow({
 
     metricsCell = (
       <td className="homework-table__cell">
-        <span className="homework-table__muted">{homeworkAssignments.length} attempts submitted</span>
+        <span className="homework-table__muted">{homeworkAssignments.length} ta urinish yuborilgan</span>
       </td>
     );
     statusCell = (
       <td className="homework-table__cell">
-        <span className="homework-table__muted">{reviewPending} pending review</span>
+        <span className="homework-table__muted">{reviewPending} tasi tekshiruv kutilmoqda</span>
       </td>
     );
   }
@@ -90,7 +90,7 @@ export function AssignmentRow({
       tabIndex={0}
     >
       <td className="homework-table__cell">
-        <strong>Homework #{homework.id}</strong>
+        <strong>Uy vazifasi #{homework.id}</strong>
       </td>
       <td className="homework-table__cell homework-table__cell--description">
         {homework.description}
@@ -107,7 +107,7 @@ export function AssignmentRow({
             }}
             type="button"
           >
-            Edit
+            Tahrirlash
           </button>
         </td>
       ) : null}

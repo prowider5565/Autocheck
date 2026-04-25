@@ -40,7 +40,7 @@ export function CoursesPage({ appState }: { appState: AppState }) {
     event.preventDefault();
 
     if (!title.trim()) {
-      setMessage('Please enter a course title.');
+      setMessage('Iltimos, kurs nomini kiriting.');
       return;
     }
 
@@ -61,7 +61,7 @@ export function CoursesPage({ appState }: { appState: AppState }) {
       setMessage(
         caughtError instanceof Error
           ? caughtError.message
-          : 'Unable to create the course right now.',
+          : "Hozir kurs yaratib bo'lmadi.",
       );
     } finally {
       setBusy(false);
@@ -72,7 +72,7 @@ export function CoursesPage({ appState }: { appState: AppState }) {
     <div className="page-stack">
       <div className="panel__header panel__header--split">
         <PageHeading
-          eyebrow="My courses"
+          eyebrow="Mening kurslarim"
           title={getCoursesTitle(currentUser.role)}
           description={getCoursesDescription(currentUser.role)}
         />
@@ -86,57 +86,57 @@ export function CoursesPage({ appState }: { appState: AppState }) {
             type="button"
           >
             <AddIcon />
-            Create course
+            Kurs yaratish
           </button>
         ) : null}
       </div>
       <div className="hero-stats hero-stats--compact">
         <MetricCard
-          label="Courses"
+          label="Kurslar"
           value={String(activeCourses.length)}
-          hint="Active in your dashboard"
+          hint="Panelingizdagi faol kurslar"
         />
         <MetricCard
-          label="Archived"
+          label="Arxiv"
           value={String(archivedCourses.length)}
-          hint="Still viewable with submissions"
+          hint="Yuborilgan ishlar bilan ko'rish mumkin"
         />
         <MetricCard
-          label="Homeworks"
+          label="Uy vazifalari"
           value={String(
             appState.homeworks.filter((homework) =>
               visibleCourses.some((course) => course.id === homework.courseId),
             ).length,
           )}
-          hint="Across visible courses"
+          hint="Ko'rinadigan barcha kurslar bo'yicha"
         />
         <MetricCard
-          label="Processing now"
+          label="Hozir jarayonda"
           value={String(
             appState.assignments.filter((assignment) => assignment.status === 'processing')
               .length,
           )}
-          hint="Student attempts awaiting evaluation"
+          hint="Baholashni kutayotgan urinishlar"
         />
       </div>
 
       {!appState.dataResolved ? (
         <div className="panel">
           <EmptyState
-            title="Loading courses"
-            description="The dashboard is fetching your current course and homework data."
+            title="Kurslar yuklanmoqda"
+            description="Panel joriy kurslar va uy vazifalari ma'lumotlarini yuklamoqda."
           />
         </div>
       ) : (
         <>
-          <div className="segmented-control" role="tablist" aria-label="Course visibility">
+          <div className="segmented-control" role="tablist" aria-label="Kurs ko'rinishi">
             <button
               aria-pressed={courseView === 'active'}
               className={courseView === 'active' ? 'segmented-control__button segmented-control__button--active' : 'segmented-control__button'}
               onClick={() => setCourseView('active')}
               type="button"
             >
-              Active courses
+              Faol kurslar
             </button>
             <button
               aria-pressed={courseView === 'archived'}
@@ -144,7 +144,7 @@ export function CoursesPage({ appState }: { appState: AppState }) {
               onClick={() => setCourseView('archived')}
               type="button"
             >
-              Archived courses
+              Arxiv kurslar
             </button>
           </div>
 
@@ -152,11 +152,11 @@ export function CoursesPage({ appState }: { appState: AppState }) {
             {listedCourses.length === 0 ? (
               <div className="panel">
                 <EmptyState
-                  title={courseView === 'active' ? 'No active courses yet' : 'No archived courses yet'}
+                  title={courseView === 'active' ? 'Hali faol kurslar yo\'q' : 'Hali arxiv kurslar yo\'q'}
                   description={
                     courseView === 'active'
-                      ? 'Once courses exist in the backend, they will appear here and inside the sidebar dropdown.'
-                      : 'Archived courses will stay available here so you can review their homeworks and submissions anytime.'
+                      ? "Backendda kurslar paydo bo'lgach, ular shu yerda va yon panel ro'yxatida ko'rinadi."
+                      : "Arxiv kurslar shu yerda saqlanadi, shuning uchun ularning vazifa va yuborilgan ishlarini istalgan payt ko'rishingiz mumkin."
                   }
                 />
               </div>
@@ -174,8 +174,8 @@ export function CoursesPage({ appState }: { appState: AppState }) {
           <div aria-modal="true" className="modal-card" role="dialog">
             <div className="panel__header panel__header--split">
               <div>
-                <h2>Create course</h2>
-                <p>Create the course first, then you can add homework inside it.</p>
+                <h2>Kurs yaratish</h2>
+                <p>Avval kurs yarating, keyin uning ichiga uy vazifalarini qo'shasiz.</p>
               </div>
               <button
                 className="ghost-button"
@@ -185,25 +185,25 @@ export function CoursesPage({ appState }: { appState: AppState }) {
                 }}
                 type="button"
               >
-                Close
+                Yopish
               </button>
             </div>
 
             <form className="stack-form" onSubmit={handleCreateCourse}>
               <label>
-                Course title
+                Kurs nomi
                 <input
                   onChange={(event) => setTitle(event.target.value)}
-                  placeholder="Algebra Foundations"
+                  placeholder="Algebra asoslari"
                   value={title}
                 />
               </label>
 
               <label>
-                Description
+                Tavsif
                 <textarea
                   onChange={(event) => setDescription(event.target.value)}
-                  placeholder="Write a short course description..."
+                  placeholder="Kurs haqida qisqa tavsif yozing..."
                   rows={6}
                   value={description}
                 />
@@ -212,7 +212,7 @@ export function CoursesPage({ appState }: { appState: AppState }) {
               {message ? <p className="inline-message inline-message--warning">{message}</p> : null}
 
               <button className="primary-button" disabled={busy} type="submit">
-                {busy ? 'Creating...' : 'Create course'}
+                {busy ? 'Yaratilmoqda...' : 'Kurs yaratish'}
               </button>
             </form>
           </div>
@@ -243,7 +243,7 @@ function CourseCard({
     (homework) => homework.courseId === course.id,
   );
 
-  let scoreCopy = 'Course overview ready';
+  let scoreCopy = "Kurs bo'yicha umumiy ma'lumot tayyor";
   let statusLabel: AssignmentStatus | null = null;
 
   if (appState.currentUser?.role === 'student') {
@@ -258,8 +258,8 @@ function CourseCard({
       statusLabel = latestAssignment.status;
       scoreCopy =
         latestAssignment.status === 'graded'
-          ? `Latest score ${latestAssignment.finalScore ?? latestAssignment.geminiScore}/10`
-          : 'Newest submission is still being processed';
+          ? `So'nggi ball ${latestAssignment.finalScore ?? latestAssignment.geminiScore}/10`
+          : "So'nggi yuborilgan javob hali qayta ishlanmoqda";
     }
   }
 
@@ -268,16 +268,16 @@ function CourseCard({
       <div className="course-card__header">
         <span className="section-tag">{course.teacherName}</span>
         {course.isArchived ? (
-          <span className="pill pill--archived">Archived</span>
+          <span className="pill pill--archived">Arxiv</span>
         ) : statusLabel ? (
           <StatusPill status={statusLabel} />
         ) : null}
       </div>
       <h2>{course.title}</h2>
-      <p>{course.description ?? 'No course description yet.'}</p>
+      <p>{course.description ?? "Hali kurs tavsifi yo'q."}</p>
       <div className="course-card__meta">
-        <span>{courseHomeworks.length} homeworks</span>
-        <span>{appState.currentUser?.role === 'teacher' ? 'Owned by you' : 'Open to students'}</span>
+        <span>{courseHomeworks.length} ta uy vazifasi</span>
+        <span>{appState.currentUser?.role === 'teacher' ? 'Sizga tegishli' : 'Talabalar uchun ochiq'}</span>
       </div>
       <strong className="course-card__score">{scoreCopy}</strong>
     </Link>

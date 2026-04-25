@@ -10,18 +10,18 @@ export function SubmissionCard({
   student: User;
 }) {
   const isFinalized = assignment.status === 'graded';
-  const displayScore = isFinalized ? assignment.finalScore ?? 'Pending' : 'Hidden until finalized';
+  const displayScore = isFinalized ? assignment.finalScore ?? 'Kutilmoqda' : 'Yakunlangunga qadar yashirin';
   const displayFeedback = isFinalized
-    ? assignment.finalFeedback ?? 'Final feedback is not available yet.'
+    ? assignment.finalFeedback ?? "Yakuniy izoh hali mavjud emas."
     : assignment.status === 'review_pending'
-      ? 'Your teacher is reviewing this attempt. Feedback will appear after final confirmation.'
-      : 'Your submission is being processed.';
+      ? "O'qituvchingiz bu urinishni ko'rib chiqmoqda. Yakuniy tasdiqdan so'ng izoh ko'rinadi."
+      : 'Yuborgan javobingiz qayta ishlanmoqda.';
 
   return (
     <article className="submission-card">
       <header className="submission-card__header">
         <div>
-          <strong>Attempt {assignment.attemptNumber}</strong>
+          <strong>Urinish {assignment.attemptNumber}</strong>
           <p>{student.fullName}</p>
         </div>
         <StatusPill status={assignment.status} />
@@ -29,11 +29,11 @@ export function SubmissionCard({
 
       <dl className="submission-card__meta">
         <div>
-          <dt>Source</dt>
-          <dd>{assignment.sourceType}</dd>
+          <dt>Manba</dt>
+          <dd>{assignment.sourceType === 'text' ? 'Matn' : assignment.sourceType === 'image' ? 'Rasm' : 'TXT fayl'}</dd>
         </div>
         <div>
-          <dt>Submitted</dt>
+          <dt>Yuborilgan vaqt</dt>
           <dd>{formatTimestamp(assignment.submittedAt)}</dd>
         </div>
       </dl>
@@ -44,7 +44,7 @@ export function SubmissionCard({
         </pre>
 
         <section className="submission-card__result">
-          <p className="submission-card__score-label">Score</p>
+          <p className="submission-card__score-label">Ball</p>
           <p
             className="submission-card__score"
             style={
@@ -60,7 +60,7 @@ export function SubmissionCard({
       </div>
 
       {assignment.fileName ? (
-        <small className="submission-card__file">File: {assignment.fileName}</small>
+        <small className="submission-card__file">Fayl: {assignment.fileName}</small>
       ) : null}
     </article>
   );

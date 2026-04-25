@@ -30,7 +30,7 @@ export function LoginPage({ appState }: { appState: AppState }) {
       const message =
         caughtError instanceof Error
           ? caughtError.message
-          : 'Unable to log in right now.';
+          : "Hozir tizimga kirib bo'lmadi.";
       setError(message);
     } finally {
       setSubmitting(false);
@@ -41,15 +41,14 @@ export function LoginPage({ appState }: { appState: AppState }) {
     <div className="auth-shell auth-shell--login">
       <section className="auth-hero auth-hero--education">
         <div className="auth-hero__topbar">
-          <span className="section-tag">Education workspace</span>
-          <span className="auth-hero__eyebrow">Autocheck Campus</span>
+          <span className="section-tag">Ta'lim maydoni</span>
+          <span className="auth-hero__eyebrow">Autocheck Kampusi</span>
         </div>
 
         <div className="auth-hero__lead">
-          <h1>Teach, submit, review, and improve from one academic dashboard.</h1>
+          <h1>Bitta akademik panelda o'qiting, topshiring, tekshiring va yaxshilang.</h1>
           <p>
-            Built for classrooms that need clear homework flows, fast feedback, and
-            teacher review without the clutter of a generic admin panel.
+            Bu platforma aniq uy vazifasi jarayoni, tez fikr-mulohaza va o'qituvchi nazoratiga ehtiyoj sezadigan sinflar uchun yaratilgan.
           </p>
         </div>
 
@@ -57,22 +56,22 @@ export function LoginPage({ appState }: { appState: AppState }) {
           <div className="auth-step">
             <span className="auth-step__index">01</span>
             <div>
-              <strong>Assign</strong>
-              <p>Publish homework prompts inside each course.</p>
+              <strong>Vazifa bering</strong>
+              <p>Har bir kurs ichida uy vazifasi topshiriqlarini e'lon qiling.</p>
             </div>
           </div>
           <div className="auth-step">
             <span className="auth-step__index">02</span>
             <div>
-              <strong>Submit</strong>
-              <p>Students send text, image, or TXT answers in one place.</p>
+              <strong>Yuboring</strong>
+              <p>Talabalar matn, rasm yoki TXT javoblarni bir joyning o'zida yuboradi.</p>
             </div>
           </div>
           <div className="auth-step">
             <span className="auth-step__index">03</span>
             <div>
-              <strong>Review</strong>
-              <p>Scores and feedback stay visible right next to the response.</p>
+              <strong>Tekshiring</strong>
+              <p>Ball va izohlar javob yonida doim ko'rinib turadi.</p>
             </div>
           </div>
         </div>
@@ -80,17 +79,17 @@ export function LoginPage({ appState }: { appState: AppState }) {
 
       <section className="auth-card auth-card--login">
         <div className="auth-card__header">
-          <span className="section-tag">Welcome back</span>
-          <h2>Sign in to your learning workspace</h2>
-          <p>Use your school email and continue into your courses, homework queue, and review tools.</p>
+          <span className="section-tag">Yana xush kelibsiz</span>
+          <h2>Ta'lim ish maydoningizga kiring</h2>
+          <p>Maktab emailingiz bilan kiring va kurslar, vazifalar navbati hamda tekshiruv vositalariga o'ting.</p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
-            Email
+            Elektron pochta
             <input
               type="email"
-              placeholder="you@school.edu"
+              placeholder="siz@school.edu"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
@@ -98,7 +97,7 @@ export function LoginPage({ appState }: { appState: AppState }) {
           </label>
 
           <label>
-            Password
+            Parol
             <input
               type="password"
               placeholder="••••••••"
@@ -115,19 +114,19 @@ export function LoginPage({ appState }: { appState: AppState }) {
 
           <button className="primary-button button-with-icon" disabled={submitting} type="submit">
             <LoginIcon />
-            {submitting ? 'Logging in...' : 'Enter dashboard'}
+            {submitting ? 'Kirilmoqda...' : 'Panelga kirish'}
           </button>
         </form>
 
         <button className="google-button button-with-icon" onClick={startGoogleAuth} type="button">
           <GoogleIcon />
-          Continue with Google
+          Google orqali davom etish
         </button>
 
 
 
         <p className="auth-footnote">
-          No matching account yet? <Link to="/signup">Create one</Link>
+          Hali akkauntingiz yo'qmi? <Link to="/signup">Yaratish</Link>
         </p>
       </section>
     </div>

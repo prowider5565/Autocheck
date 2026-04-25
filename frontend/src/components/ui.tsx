@@ -1,7 +1,13 @@
 import type { AssignmentStatus } from '../types';
 
 export function StatusPill({ status }: { status: AssignmentStatus }) {
-  return <span className={`status-pill status-pill--${status}`}>{status}</span>;
+  const statusLabel: Record<AssignmentStatus, string> = {
+    processing: 'Jarayonda',
+    review_pending: "Ko'rib chiqish kutilmoqda",
+    graded: 'Baholangan',
+  };
+
+  return <span className={`status-pill status-pill--${status}`}>{statusLabel[status]}</span>;
 }
 
 export function MetricCard({
@@ -59,7 +65,7 @@ export function NotFoundState({ message }: { message: string }) {
   return (
     <div className="page-stack">
       <div className="panel">
-        <EmptyState title="Unavailable" description={message} />
+        <EmptyState title="Mavjud emas" description={message} />
       </div>
     </div>
   );
@@ -69,9 +75,9 @@ export function SplashScreen() {
   return (
     <div className="auth-shell">
       <section className="auth-hero auth-hero--compact">
-        <span className="section-tag">Checking session</span>
-        <h1>Loading your workspace...</h1>
-        <p>The frontend is asking the backend for the current profile using the auth cookie.</p>
+        <span className="section-tag">Sessiya tekshirilmoqda</span>
+        <h1>Ish maydoni yuklanmoqda...</h1>
+        <p>Frontend auth cookie orqali backenddan joriy profil ma'lumotlarini so'ramoqda.</p>
       </section>
     </div>
   );

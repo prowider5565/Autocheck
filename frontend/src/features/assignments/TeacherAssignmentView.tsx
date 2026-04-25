@@ -18,18 +18,17 @@ export function TeacherAssignmentView({
   return (
     <div className="panel">
       <div className="panel__header">
-        <h2>Student attempts</h2>
+        <h2>Talabalar urinishlari</h2>
         <p>
-          Teachers can inspect all assignment attempts for this homework, review Gemini drafts,
-          and confirm the final score when needed.
+          O'qituvchilar bu uy vazifasi bo'yicha barcha urinishlarni ko'rib chiqishi, Gemini tayyorlagan qoralamalarni tekshirishi va kerak bo'lganda yakuniy ballni tasdiqlashi mumkin.
         </p>
       </div>
 
       <div className="teacher-review-list">
         {relevantAssignments.length === 0 ? (
           <EmptyState
-            title="No submissions yet"
-            description="Student work for this homework will appear here."
+            title="Hali topshiriqlar yo'q"
+            description="Talabalar ishlari shu yerda ko'rinadi."
           />
         ) : (
           relevantAssignments.map((assignment) => {
@@ -80,7 +79,7 @@ function TeacherReviewCard({
   const visibleFeedback =
     assignment.finalFeedback ??
     assignment.geminiFeedback ??
-    'Gemini is still producing the draft evaluation.';
+    'Gemini hali baholash qoralamasini tayyorlamoqda.';
 
   async function handleConfirm() {
     const parsedScore = Number(score);
@@ -98,12 +97,12 @@ function TeacherReviewCard({
         finalScore: Math.min(10, Math.max(1, parsedScore)),
         finalFeedback: trimToSixtyWords(feedback),
       });
-      setMessage('Final evaluation confirmed.');
+      setMessage('Yakuniy baholash tasdiqlandi.');
     } catch (caughtError) {
       setMessage(
         caughtError instanceof Error
           ? caughtError.message
-          : 'Unable to confirm the evaluation.',
+          : "Baholashni tasdiqlab bo'lmadi.",
       );
     } finally {
       setBusy(false);
@@ -116,7 +115,7 @@ function TeacherReviewCard({
         <div>
           <strong>{student.fullName}</strong>
           <p>
-            Attempt {assignment.attemptNumber} for homework #{homework.id}
+            Uy vazifasi #{homework.id} uchun {assignment.attemptNumber}-urinish
           </p>
         </div>
         <StatusPill status={assignment.status} />
@@ -124,16 +123,16 @@ function TeacherReviewCard({
 
       <dl className="submission-card__meta">
         <div>
-          <dt>Gemini score</dt>
-          <dd>{assignment.geminiScore ?? 'Pending'}</dd>
+          <dt>Gemini balli</dt>
+          <dd>{assignment.geminiScore ?? 'Kutilmoqda'}</dd>
         </div>
         <div>
-          <dt>Homework</dt>
+          <dt>Uy vazifasi</dt>
           <dd>#{homework.id}</dd>
         </div>
         <div>
-          <dt>Teacher edited</dt>
-          <dd>{assignment.teacherEdited ? 'Yes' : 'No'}</dd>
+          <dt>O'qituvchi tahrirlagan</dt>
+          <dd>{assignment.teacherEdited ? 'Ha' : "Yo'q"}</dd>
         </div>
       </dl>
 
@@ -144,13 +143,13 @@ function TeacherReviewCard({
 
         <section className="submission-card__result">
           <p className="submission-card__score-label">
-            {assignment.status === 'graded' ? 'Final score' : 'Current score'}
+            {assignment.status === 'graded' ? 'Yakuniy ball' : 'Joriy ball'}
           </p>
           <p
             className="submission-card__score"
             style={typeof visibleScore === 'number' ? { color: getScoreColor(visibleScore) } : undefined}
           >
-            {typeof visibleScore === 'number' ? `${visibleScore}/10` : 'Pending'}
+            {typeof visibleScore === 'number' ? `${visibleScore}/10` : 'Kutilmoqda'}
           </p>
           <p className="submission-card__feedback">{visibleFeedback}</p>
         </section>
@@ -159,7 +158,7 @@ function TeacherReviewCard({
       {assignment.status === 'review_pending' ? (
         <div className="review-form">
           <label>
-            Final score
+            Yakuniy ball
             <input
               max="10"
               min="0"
@@ -170,7 +169,7 @@ function TeacherReviewCard({
             />
           </label>
           <label>
-            Final feedback
+            Yakuniy izoh
             <textarea
               onChange={(event) => setFeedback(event.target.value)}
               rows={4}
@@ -178,7 +177,7 @@ function TeacherReviewCard({
             />
           </label>
           <button className="primary-button" onClick={handleConfirm} type="button">
-            {busy ? 'Confirming...' : 'Confirm final evaluation'}
+            {busy ? 'Tasdiqlanmoqda...' : 'Yakuniy baholashni tasdiqlash'}
           </button>
           {message ? <p className="inline-message">{message}</p> : null}
         </div>

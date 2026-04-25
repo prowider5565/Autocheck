@@ -119,7 +119,7 @@ export function useAutocheckApp(): AppState {
         setAuthError(
           caughtError instanceof Error
             ? caughtError.message
-            : 'Unable to load courses right now.',
+            : "Hozir kurslarni yuklab bo'lmadi.",
         );
       } finally {
         if (active) {

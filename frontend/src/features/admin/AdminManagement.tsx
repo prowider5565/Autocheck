@@ -2,11 +2,20 @@ import type { AppState } from '../../app/app-state';
 import { EmptyState } from '../../components/ui';
 
 export function AdminManagement({ appState }: { appState: AppState }) {
+  const roleLabel =
+    appState.currentUser?.role === 'teacher'
+      ? "o'qituvchi"
+      : appState.currentUser?.role === 'student'
+        ? 'talaba'
+        : appState.currentUser?.role === 'admin'
+          ? 'admin'
+          : "noma'lum";
+
   return (
     <section className="panel">
       <EmptyState
-        title="Admin tools postponed"
-        description={`The current implementation phase is focused on courses, homeworks, and student assignment attempts. Signed-in role: ${appState.currentUser?.role ?? 'unknown'}.`}
+        title="Admin vositalari keyinga qoldirilgan"
+        description={`Joriy bosqich kurslar, uy vazifalari va talabalar urinishlariga qaratilgan. Tizimga kirgan rol: ${roleLabel}.`}
       />
     </section>
   );

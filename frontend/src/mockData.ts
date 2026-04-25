@@ -49,15 +49,15 @@ export const demoAssignments: Assignment[] = [
     status: 'graded',
     submittedAt: '2026-04-23T08:12:00.000Z',
     extractedText:
-      'To solve a quadratic equation, I first identify the coefficients, then apply factorization or the quadratic formula. Example: x^2 + 5x + 6 = 0 becomes (x+2)(x+3)=0.',
+      "Kvadrat tenglamani yechish uchun avval koeffitsiyentlarni aniqlayman, so'ngra ko'paytuvchilarga ajratish yoki kvadrat formula usulidan foydalanaman. Masalan: x^2 + 5x + 6 = 0 tenglama (x+2)(x+3)=0 ko'rinishiga keladi.",
     originalText:
-      'To solve a quadratic equation, I first identify the coefficients, then apply factorization or the quadratic formula. Example: x^2 + 5x + 6 = 0 becomes (x+2)(x+3)=0.',
+      "Kvadrat tenglamani yechish uchun avval koeffitsiyentlarni aniqlayman, so'ngra ko'paytuvchilarga ajratish yoki kvadrat formula usulidan foydalanaman. Masalan: x^2 + 5x + 6 = 0 tenglama (x+2)(x+3)=0 ko'rinishiga keladi.",
     geminiScore: 8.5,
     geminiFeedback:
-      'Good explanation and example. Show why each factor leads to a root.',
+      "Izoh va misol yaxshi. Har bir ko'paytuvchi nima uchun ildiz berishini ham ko'rsating.",
     finalScore: 8.5,
     finalFeedback:
-      'Good explanation and example. Show why each factor leads to a root.',
+      "Izoh va misol yaxshi. Har bir ko'paytuvchi nima uchun ildiz berishini ham ko'rsating.",
     teacherEdited: false,
   },
   {
@@ -69,11 +69,11 @@ export const demoAssignments: Assignment[] = [
     status: 'review_pending',
     submittedAt: '2026-04-23T10:24:00.000Z',
     extractedText:
-      'I factored the first expression into (x + 4)(x - 2) and the second into (y + 1)(y + 5), but I need to justify the middle term split more clearly.',
+      "Birinchi ifodani (x + 4)(x - 2), ikkinchisini esa (y + 1)(y + 5) ko'rinishida ajratdim, lekin o'rta had qanday bo'linganini yanada aniqroq asoslashim kerak.",
     fileName: 'factorization-notes.png',
     geminiScore: 7,
     geminiFeedback:
-      'Reasoning is partly correct. Clarify how the middle term was split in each example.',
+      "Fikr yuritish qisman to'g'ri. Har bir misolda o'rta had qanday ajratilganini aniqroq tushuntiring.",
     teacherEdited: false,
   },
   {
@@ -85,7 +85,7 @@ export const demoAssignments: Assignment[] = [
     status: 'processing',
     submittedAt: '2026-04-23T11:42:00.000Z',
     extractedText:
-      'Uniforms should remain optional because students learn better when they feel comfortable expressing themselves.',
+      "Maktab formasi majburiy bo'lmasligi kerak, chunki o'quvchilar o'zini erkin his qilganda yaxshiroq o'rganadi.",
     fileName: 'argument-draft.txt',
     teacherEdited: false,
   },
@@ -98,15 +98,15 @@ export const demoAssignments: Assignment[] = [
     status: 'graded',
     submittedAt: '2026-04-22T09:10:00.000Z',
     extractedText:
-      'The event grew from economic pressure and political mistrust, and it later changed how regional alliances were formed.',
+      "Bu voqea iqtisodiy bosim va siyosiy ishonchsizlikdan kelib chiqqan, keyinchalik esa mintaqaviy ittifoqlar qanday shakllanishiga ta'sir ko'rsatgan.",
     originalText:
-      'The event grew from economic pressure and political mistrust, and it later changed how regional alliances were formed.',
+      "Bu voqea iqtisodiy bosim va siyosiy ishonchsizlikdan kelib chiqqan, keyinchalik esa mintaqaviy ittifoqlar qanday shakllanishiga ta'sir ko'rsatgan.",
     geminiScore: 9,
     geminiFeedback:
-      'Clear summary with good structure. Add one concrete example for stronger evidence.',
+      "Xulosa aniq va tuzilishi yaxshi. Dalilni kuchaytirish uchun bitta aniq misol qo'shing.",
     finalScore: 9,
     finalFeedback:
-      'Clear summary with good structure. Add one concrete example for stronger evidence.',
+      "Xulosa aniq va tuzilishi yaxshi. Dalilni kuchaytirish uchun bitta aniq misol qo'shing.",
     teacherEdited: false,
   },
 ];

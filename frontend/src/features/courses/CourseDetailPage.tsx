@@ -26,7 +26,7 @@ export function CourseDetailPage({ appState }: { appState: AppState }) {
   const course = appState.courses.find((item) => item.id === parsedCourseId);
 
   if (!course || !canAccessCourse(currentUser, course)) {
-    return <NotFoundState message="This course is not available for your account." />;
+    return <NotFoundState message="Bu kurs akkauntingiz uchun mavjud emas." />;
   }
 
   const currentCourse = course;
@@ -67,7 +67,7 @@ export function CourseDetailPage({ appState }: { appState: AppState }) {
     event.preventDefault();
 
     if (!selectedCourseId || !description.trim()) {
-      setMessage('Please choose a course and enter a homework description.');
+      setMessage('Iltimos, kursni tanlang va uy vazifasi tavsifini kiriting.');
       return;
     }
 
@@ -97,7 +97,7 @@ export function CourseDetailPage({ appState }: { appState: AppState }) {
       setMessage(
         caughtError instanceof Error
           ? caughtError.message
-          : 'Unable to save the homework right now.',
+          : "Hozir uy vazifasini saqlab bo'lmadi.",
       );
     } finally {
       setBusy(false);
@@ -117,7 +117,7 @@ export function CourseDetailPage({ appState }: { appState: AppState }) {
       setMessage(
         caughtError instanceof Error
           ? caughtError.message
-          : 'Unable to update the course archive state right now.',
+          : "Hozir kurs arxiv holatini yangilab bo'lmadi.",
       );
     } finally {
       setArchiveBusy(false);
@@ -127,13 +127,13 @@ export function CourseDetailPage({ appState }: { appState: AppState }) {
   return (
     <div className="page-stack">
       <Link className="back-link" to="/dashboard/courses">
-        Back to my courses
+        Kurslarimga qaytish
       </Link>
 
       <div className="panel__header panel__header--split">
         <div className="page-heading page-heading--compact">
           <h2>{currentCourse.title}</h2>
-          <p>{currentCourse.description ?? 'No course description yet.'}</p>
+          <p>{currentCourse.description ?? "Hali kurs tavsifi yo'q."}</p>
         </div>
         {currentUser.role === 'teacher' ? (
           <button
@@ -145,18 +145,18 @@ export function CourseDetailPage({ appState }: { appState: AppState }) {
             <ArchiveIcon />
             {archiveBusy
               ? currentCourse.isArchived
-                ? 'Restoring...'
-                : 'Archiving...'
+                ? 'Tiklanmoqda...'
+                : 'Arxivlanmoqda...'
               : currentCourse.isArchived
-                ? 'Unarchive course'
-                : 'Archive course'}
+                ? 'Kursni arxivdan chiqarish'
+                : 'Kursni arxivlash'}
           </button>
         ) : null}
       </div>
 
       {currentCourse.isArchived ? (
         <div className="inline-message inline-message--warning">
-          This course is archived. You can still view its homeworks and submissions.
+          Bu kurs arxivlangan. Siz hali ham uning uy vazifalari va yuborilgan ishlarini ko'rishingiz mumkin.
         </div>
       ) : null}
 
@@ -164,53 +164,53 @@ export function CourseDetailPage({ appState }: { appState: AppState }) {
 
       <div className="hero-stats hero-stats--compact">
         <MetricCard
-          label="Teacher"
+          label="O'qituvchi"
           value={currentCourse.teacherName}
-          hint="Single owner in v1"
+          hint="v1 da bitta mas'ul o'qituvchi"
         />
         <MetricCard
-          label="Visibility"
-          value={currentCourse.isArchived ? 'Archived' : 'Active'}
-          hint={currentCourse.isArchived ? 'Read history anytime' : 'Open for current work'}
+          label="Holat"
+          value={currentCourse.isArchived ? 'Arxiv' : 'Faol'}
+          hint={currentCourse.isArchived ? "Tarixni istalgan payt ko'rish mumkin" : 'Joriy ish uchun ochiq'}
         />
         <MetricCard
-          label="Homeworks"
+          label="Uy vazifalari"
           value={String(courseHomeworks.length)}
-          hint="Teacher-created prompts in this course"
+          hint="Bu kursdagi o'qituvchi yaratgan topshiriqlar"
         />
-        <MetricCard label="Pending review" value={String(reviewPendingCount)} hint="Teacher action needed" />
+        <MetricCard label="Kutilayotgan tekshiruv" value={String(reviewPendingCount)} hint="O'qituvchi harakati kerak" />
       </div>
 
       <div className="panel">
         <div className="panel__header panel__header--split">
           <div>
-            <h2>Homeworks</h2>
+            <h2>Uy vazifalari</h2>
             <p>
               {currentUser.role === 'student'
-                ? 'Open a homework to submit your response and review your assignment attempt history.'
-                : 'Create new homeworks, edit descriptions, and inspect student assignment attempts.'}
+                ? "Javob yuborish va urinishlar tarixini ko'rish uchun uy vazifasini oching."
+                : "Yangi uy vazifalari yarating, tavsiflarni tahrirlang va talabalar urinishlarini ko'rib chiqing."}
             </p>
           </div>
           {currentUser.role === 'teacher' ? (
             <button className="primary-button button-with-icon" onClick={openCreateModal} type="button">
               <AddIcon />
-              Add new homework
+              Yangi uy vazifasi qo'shish
             </button>
           ) : null}
         </div>
 
         {courseHomeworks.length === 0 ? (
-          <NotFoundState message="No homeworks have been created for this course yet." />
+          <NotFoundState message="Bu kurs uchun hali uy vazifalari yaratilmagan." />
         ) : (
           <div className="table-shell">
             <table className="homework-table">
               <thead>
                 <tr>
-                  <th>Homework</th>
-                  <th>Description</th>
-                  <th>{currentUser.role === 'teacher' ? 'Attempts' : 'Usage'}</th>
-                  <th>{currentUser.role === 'teacher' ? 'Pending review' : 'Status'}</th>
-                  {currentUser.role === 'teacher' ? <th>Actions</th> : null}
+                  <th>Uy vazifasi</th>
+                  <th>Tavsif</th>
+                  <th>{currentUser.role === 'teacher' ? 'Urinishlar' : 'Foydalanish'}</th>
+                  <th>{currentUser.role === 'teacher' ? 'Kutilayotgan tekshiruv' : 'Holat'}</th>
+                  {currentUser.role === 'teacher' ? <th>Amallar</th> : null}
                 </tr>
               </thead>
               <tbody>
@@ -237,11 +237,11 @@ export function CourseDetailPage({ appState }: { appState: AppState }) {
           >
             <div className="panel__header panel__header--split">
               <div>
-                <h2>{editingHomework ? 'Edit homework' : 'Add new homework'}</h2>
+                <h2>{editingHomework ? 'Uy vazifasini tahrirlash' : "Yangi uy vazifasi qo'shish"}</h2>
                 <p>
                   {editingHomework
-                    ? 'Update the homework description.'
-                    : 'Select a course, write the homework text, and create it.'}
+                    ? 'Uy vazifasi tavsifini yangilang.'
+                    : "Kursni tanlang, vazifa matnini yozing va yarating."}
                 </p>
               </div>
               <button
@@ -253,13 +253,13 @@ export function CourseDetailPage({ appState }: { appState: AppState }) {
                 }}
                 type="button"
               >
-                Close
+                Yopish
               </button>
             </div>
 
             <form className="stack-form" onSubmit={handleHomeworkSubmit}>
               <label>
-                Course
+                Kurs
                 <select
                   disabled={Boolean(editingHomework)}
                   onChange={(event) => setSelectedCourseId(Number(event.target.value))}
@@ -274,10 +274,10 @@ export function CourseDetailPage({ appState }: { appState: AppState }) {
               </label>
 
               <label>
-                Homework description
+                Uy vazifasi tavsifi
                 <textarea
                   onChange={(event) => setDescription(event.target.value)}
-                  placeholder="Write the homework text here..."
+                  placeholder="Uy vazifasi matnini shu yerga yozing..."
                   rows={8}
                   value={description}
                 />
@@ -288,11 +288,11 @@ export function CourseDetailPage({ appState }: { appState: AppState }) {
               <button className="primary-button" disabled={busy} type="submit">
                 {busy
                   ? editingHomework
-                    ? 'Saving...'
-                    : 'Creating...'
+                    ? 'Saqlanmoqda...'
+                    : 'Yaratilmoqda...'
                   : editingHomework
-                    ? 'Save homework'
-                    : 'Create homework'}
+                    ? 'Uy vazifasini saqlash'
+                    : 'Uy vazifasini yaratish'}
               </button>
             </form>
           </div>

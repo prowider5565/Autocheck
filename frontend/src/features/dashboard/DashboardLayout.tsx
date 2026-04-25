@@ -41,7 +41,7 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
         <div>
           <Link className="brand" to="/dashboard/courses">
             <span className="brand__eyebrow">Autocheck</span>
-            <strong>Homework Review Hub</strong>
+            <strong>Uy Vazifalarini Tekshirish Markazi</strong>
           </Link>
           <nav className="sidebar__nav">
             <button
@@ -55,7 +55,7 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
               type="button"
             >
               <span className="sidebar__toggle-label">
-                <strong>My courses</strong>
+                <strong>Mening kurslarim</strong>
               </span>
               <span
                 className={
@@ -83,7 +83,7 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
                 end
                 to="/dashboard/courses"
               >
-                All courses
+                Barcha kurslar
               </NavLink>
               {activeCourses.map((course) => (
                 <NavLink
@@ -99,7 +99,7 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
                 </NavLink>
               ))}
               {archivedCourses.length > 0 ? (
-                <p className="sidebar__section-label">Archived</p>
+                <p className="sidebar__section-label">Arxiv</p>
               ) : null}
               {archivedCourses.map((course) => (
                 <NavLink
@@ -135,8 +135,8 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
                   .toUpperCase()}
               </span>
               <span className="profile-dock__meta">
-                <strong>Profile</strong>
-                <small>Account actions</small>
+                <strong>Profil</strong>
+                <small>Akkaunt amallari</small>
               </span>
               <span
                 className={
@@ -165,7 +165,7 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
                 type="button"
               >
                 <EditIcon />
-                <span>Edit</span>
+                <span>Tahrirlash</span>
               </button>
               <button
                 className="profile-dock__item"
@@ -177,7 +177,7 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
                 type="button"
               >
                 <LogoutIcon />
-                <span>{logoutBusy ? 'Logging out...' : 'Logout'}</span>
+                <span>{logoutBusy ? 'Chiqilmoqda...' : 'Chiqish'}</span>
               </button>
             </div>
           </div>
@@ -193,15 +193,15 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
           <div aria-modal="true" className="modal-card modal-card--profile" role="dialog">
             <div className="panel__header panel__header--split">
               <div>
-                <h2>Edit profile</h2>
-                <p>Update your account details and evaluation preferences here.</p>
+                <h2>Profilni tahrirlash</h2>
+                <p>Bu yerda akkaunt ma'lumotlari va baholash sozlamalarini yangilang.</p>
               </div>
               <button
                 className="ghost-button"
                 onClick={() => setProfileModalOpen(false)}
                 type="button"
               >
-                Close
+                Yopish
               </button>
             </div>
             <ProfilePanel appState={appState} />

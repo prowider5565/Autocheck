@@ -31,7 +31,7 @@ export function SignupPage({ appState }: { appState: AppState }) {
       const message =
         caughtError instanceof Error
           ? caughtError.message
-          : 'Unable to create the account.';
+          : "Akkaunt yaratib bo'lmadi.";
       setError(message);
     } finally {
       setSubmitting(false);
@@ -41,25 +41,25 @@ export function SignupPage({ appState }: { appState: AppState }) {
   return (
     <div className="auth-shell">
       <section className="auth-hero auth-hero--compact">
-        <span className="section-tag">Public onboarding</span>
-        <h1>Create a student or teacher account.</h1>
+        <span className="section-tag">Ochiq ro'yxatdan o'tish</span>
+        <h1>Talaba yoki o'qituvchi akkauntini yarating.</h1>
         <p>
-          Google sign-in hands unknown emails back here with the address prefilled,
-          so the user only needs to choose a role, full name, and password.
+          Google orqali kirishda noma'lum email shu yerga oldindan to'ldirilgan holda qaytadi,
+          shuning uchun foydalanuvchi faqat rolni, ismni va parolni tanlaydi.
         </p>
       </section>
 
       <section className="auth-card">
         <div className="auth-card__header">
           <span className="section-tag">
-            {comingFromGoogle ? 'Google handoff' : 'Get started'}
+            {comingFromGoogle ? "Google orqali o'tish" : 'Boshlash'}
           </span>
-          <h2>Set up your account</h2>
+          <h2>Akkauntingizni sozlang</h2>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
-            Full name
+            To'liq ism
             <input
               type="text"
               placeholder="Lola Abdurakhimova"
@@ -75,7 +75,7 @@ export function SignupPage({ appState }: { appState: AppState }) {
           </label>
 
           <label>
-            Email
+            Elektron pochta
             <input
               type="email"
               value={draft.email}
@@ -90,7 +90,7 @@ export function SignupPage({ appState }: { appState: AppState }) {
           </label>
 
           <label>
-            Role
+            Rol
             <select
               value={draft.role}
               onChange={(event) =>
@@ -100,16 +100,16 @@ export function SignupPage({ appState }: { appState: AppState }) {
                 }))
               }
             >
-              <option value="student">Student</option>
-              <option value="teacher">Teacher</option>
+              <option value="student">Talaba</option>
+              <option value="teacher">O'qituvchi</option>
             </select>
           </label>
 
           <label>
-            Password
+            Parol
             <input
               type="password"
-              placeholder="Choose a secure password"
+              placeholder="Xavfsiz parol tanlang"
               value={draft.password}
               onChange={(event) =>
                 setDraft((current) => ({
@@ -124,12 +124,12 @@ export function SignupPage({ appState }: { appState: AppState }) {
           {error ? <p className="inline-message inline-message--warning">{error}</p> : null}
 
           <button className="primary-button" disabled={submitting} type="submit">
-            {submitting ? 'Creating account...' : 'Create account'}
+            {submitting ? 'Akkaunt yaratilmoqda...' : 'Akkaunt yaratish'}
           </button>
         </form>
 
         <p className="auth-footnote">
-          Already have access? <Link to="/login">Back to login</Link>
+          Akkauntingiz bormi? <Link to="/login">Kirish sahifasiga qaytish</Link>
         </p>
       </section>
     </div>
