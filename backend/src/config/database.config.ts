@@ -13,5 +13,5 @@ export const databaseConfigFactory = (
     database: config.get<string>('DB_NAME'),
     autoLoadEntities: true,
     namingStrategy: new SnakeNamingStrategy(),
-    synchronize: config.get<string>('ENVIRONMENT') === 'dev',
+    synchronize: false,
 });

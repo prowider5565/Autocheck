@@ -23,7 +23,54 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+NestJS backend for the Autocheck project.
+
+## Docker
+
+The frontend is not included in the container setup. The Docker stack runs only:
+
+- `backend`: NestJS API
+- `postgres`: PostgreSQL database
+
+Start the stack from the repository root:
+
+```bash
+docker compose up --build
+```
+
+Stop it:
+
+```bash
+docker compose down
+```
+
+The backend container uses [backend/.env.docker](/home/mateo/Public/Autocheck/backend/.env.docker) for its runtime configuration.
+
+Available endpoints after startup:
+
+- API: `http://localhost:3000/api`
+- Swagger docs: `http://localhost:3000/docs`
+
+On container startup, the backend now runs database migrations automatically before the Nest app starts.
+The container executes migrations from the TypeScript source data source and then starts the compiled Nest app.
+
+## Migrations
+
+Manual migration commands from `backend/`:
+
+```bash
+# apply pending migrations
+npm run migration:run
+
+# revert the latest migration
+npm run migration:revert
+
+# create an empty migration file
+npm run migration:create -- src/database/migrations/MyMigration
+
+# generate a migration from entity changes
+npm run migration:generate -- src/database/migrations/MyMigration
+```
 
 ## Project setup
 
