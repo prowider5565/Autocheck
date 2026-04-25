@@ -74,19 +74,35 @@ function TeacherReviewCard({
   const [feedback, setFeedback] = useState(
     assignment.finalFeedback ?? assignment.geminiFeedback ?? '',
   );
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  function handleConfirm() {
+  async function handleConfirm() {
     const parsedScore = Number(score);
 
     if (Number.isNaN(parsedScore)) {
       return;
     }
 
-    appState.confirmTeacherReview({
-      assignmentId: assignment.id,
-      finalScore: Math.min(10, Math.max(0, parsedScore)),
-      finalFeedback: trimToSixtyWords(feedback),
-    });
+    setBusy(true);
+    setMessage(null);
+
+    try {
+      await appState.confirmTeacherReview({
+        assignmentId: assignment.id,
+        finalScore: Math.min(10, Math.max(1, parsedScore)),
+        finalFeedback: trimToSixtyWords(feedback),
+      });
+      setMessage('Final evaluation confirmed.');
+    } catch (caughtError) {
+      setMessage(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to confirm the evaluation.',
+      );
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -101,7 +117,9 @@ function TeacherReviewCard({
         <StatusPill status={assignment.status} />
       </header>
 
-      <p className="submission-card__text">{assignment.extractedText}</p>
+      <pre className="submission-card__code">
+        <code>{assignment.extractedText}</code>
+      </pre>
 
       <dl className="submission-card__meta">
         <div>
@@ -144,8 +162,9 @@ function TeacherReviewCard({
             />
           </label>
           <button className="primary-button" onClick={handleConfirm} type="button">
-            Confirm final evaluation
+            {busy ? 'Confirming...' : 'Confirm final evaluation'}
           </button>
+          {message ? <p className="inline-message">{message}</p> : null}
         </div>
       ) : (
         <div className="final-review">

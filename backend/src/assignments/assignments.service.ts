@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { HomeworksService } from '../homeworks/homeworks.service';
+import { EvaluationMode } from '../users/evaluation-mode.enum';
 import { Users } from '../users/users.entity';
 import { UserRole } from '../users/users.enum';
 import { EvaluationService } from '../evaluation/evaluation.service';
@@ -15,6 +16,7 @@ import {
   AssignmentStatus,
 } from './assignments.entity';
 import { AssignmentResponseDto } from './dto/assignment-response.dto';
+import { ConfirmAssignmentReviewDto } from './dto/confirm-assignment-review.dto';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 
 @Injectable()
@@ -83,10 +85,18 @@ export class AssignmentsService {
       );
     }
 
-    const evaluation = await this.evaluationService.evaluateHomework({
-      homeworkDescription: homework.description,
-      submissionText: payload.extractedText.trim(),
-    });
+    const teacherEvaluationMode = homework.course.teacher.evaluationMode;
+    const isAiAutomated =
+      teacherEvaluationMode === EvaluationMode.AI_AUTOMATED;
+    const isPartialAssisted =
+      teacherEvaluationMode === EvaluationMode.PARTIAL_ASSISTED;
+    const evaluation =
+      isAiAutomated || isPartialAssisted
+        ? await this.evaluationService.evaluateHomework({
+            homeworkDescription: homework.description,
+            submissionText: payload.extractedText.trim(),
+          })
+        : null;
 
     const assignment = this.assignmentRepository.create({
       homeworkId,
@@ -97,13 +107,62 @@ export class AssignmentsService {
       extractedText: payload.extractedText.trim(),
       fileName: payload.fileName?.trim() || null,
       filePath: null,
-      status: AssignmentStatus.GRADED,
-      geminiScore: evaluation.score,
-      geminiFeedback: evaluation.feedback,
-      finalScore: evaluation.score,
-      finalFeedback: evaluation.feedback,
+      status:
+        isAiAutomated ? AssignmentStatus.GRADED : AssignmentStatus.REVIEW_PENDING,
+      geminiScore:
+        isAiAutomated || isPartialAssisted ? evaluation?.score ?? null : null,
+      geminiFeedback:
+        isAiAutomated || isPartialAssisted ? evaluation?.feedback ?? null : null,
+      finalScore: isAiAutomated ? evaluation?.score ?? null : null,
+      finalFeedback: isAiAutomated ? evaluation?.feedback ?? null : null,
       teacherEdited: false,
     });
+
+    const savedAssignment = await this.assignmentRepository.save(assignment);
+
+    return this.toResponseDto(savedAssignment);
+  }
+
+  async confirmReview(
+    assignmentId: number,
+    payload: ConfirmAssignmentReviewDto,
+    user: Users,
+  ): Promise<AssignmentResponseDto> {
+    if (user.role !== UserRole.TEACHER) {
+      throw new ForbiddenException('Only teachers can confirm assignment reviews.');
+    }
+
+    const assignment = await this.assignmentRepository.findOne({
+      where: { id: assignmentId },
+      relations: {
+        homework: {
+          course: {
+            teacher: true,
+          },
+        },
+      },
+    });
+
+    if (!assignment) {
+      throw new NotFoundException('Assignment was not found.');
+    }
+
+    if (assignment.homework.course.teacherId !== user.id) {
+      throw new ForbiddenException('This assignment is not available for your account.');
+    }
+
+    if (assignment.status !== AssignmentStatus.REVIEW_PENDING) {
+      throw new BadRequestException(
+        'Only review-pending assignments can be confirmed.',
+      );
+    }
+
+    assignment.status = AssignmentStatus.GRADED;
+    assignment.finalScore = Number(payload.finalScore.toFixed(1));
+    assignment.finalFeedback = this.trimToSixtyWords(payload.finalFeedback);
+    assignment.teacherEdited =
+      assignment.finalScore !== assignment.geminiScore ||
+      assignment.finalFeedback !== assignment.geminiFeedback;
 
     const savedAssignment = await this.assignmentRepository.save(assignment);
 
@@ -161,5 +220,9 @@ export class AssignmentsService {
       finalFeedback: assignment.finalFeedback,
       teacherEdited: assignment.teacherEdited,
     };
+  }
+
+  private trimToSixtyWords(text: string): string {
+    return text.trim().split(/\s+/).filter(Boolean).slice(0, 60).join(' ');
   }
 }

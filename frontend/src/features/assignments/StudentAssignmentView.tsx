@@ -21,6 +21,7 @@ export function StudentAssignmentView({
   const [textValue, setTextValue] = useState('');
   const [fileName, setFileName] = useState('');
   const [extractedText, setExtractedText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(
     'Image OCR will be wired to tesseract.js next. For now, uploads simulate extracted text so the flow is testable.',
   );
@@ -90,6 +91,9 @@ export function StudentAssignmentView({
     }
 
     try {
+      setSubmitting(true);
+      setStatusMessage('Submitting your homework for evaluation now.');
+
       await appState.submitAssignment({
         homeworkId: homework.id,
         sourceType,
@@ -114,6 +118,8 @@ export function StudentAssignmentView({
           ? caughtError.message
           : 'Unable to submit the homework right now.',
       );
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -132,6 +138,7 @@ export function StudentAssignmentView({
           <label>
             Submission type
             <select
+              disabled={submitting}
               onChange={(event) => {
                 setSourceType(event.target.value as SubmissionSourceType);
                 setFileName('');
@@ -149,6 +156,7 @@ export function StudentAssignmentView({
             <label>
               Submission text
               <textarea
+                disabled={submitting}
                 onChange={(event) => setTextValue(event.target.value)}
                 placeholder="Write your homework response here..."
                 rows={8}
@@ -160,6 +168,7 @@ export function StudentAssignmentView({
               Upload file
               <input
                 accept={sourceType === 'image' ? 'image/*' : '.txt,text/plain'}
+                disabled={submitting}
                 onChange={handleFileChange}
                 type="file"
               />
@@ -173,10 +182,19 @@ export function StudentAssignmentView({
             </label>
           ) : null}
 
-          <p className="inline-message">{statusMessage}</p>
+          <div className={submitting ? 'inline-message inline-message--processing' : 'inline-message'}>
+            {submitting ? (
+              <span className="processing-indicator">
+                <span className="processing-indicator__dot" />
+                <span className="processing-indicator__dot" />
+                <span className="processing-indicator__dot" />
+              </span>
+            ) : null}
+            <span>{statusMessage}</span>
+          </div>
 
-          <button className="primary-button" disabled={!canSubmit} type="submit">
-            Submit attempt
+          <button className="primary-button" disabled={!canSubmit || submitting} type="submit">
+            {submitting ? 'Submitting...' : 'Submit attempt'}
           </button>
 
           {!canSubmit && latestAssignment ? (

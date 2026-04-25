@@ -110,7 +110,6 @@ export function CourseDetailPage({ appState }: { appState: AppState }) {
       </Link>
 
       <PageHeading
-        eyebrow="Course detail"
         title={currentCourse.title}
         description={currentCourse.description ?? 'No course description yet.'}
       />

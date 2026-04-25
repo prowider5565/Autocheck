@@ -60,7 +60,6 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
               type="button"
             >
               <span className="sidebar__toggle-label">
-                <small>Workspace</small>
                 <strong>My courses</strong>
               </span>
               <span

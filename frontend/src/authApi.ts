@@ -212,3 +212,23 @@ export async function submitAssignment(payload: {
 
   return parseJson<Assignment>(response);
 }
+
+export async function confirmAssignmentReview(payload: {
+  assignmentId: number;
+  finalScore: number;
+  finalFeedback: string;
+}): Promise<Assignment> {
+  const response = await fetch(`/api/assignments/${payload.assignmentId}/confirm`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      finalScore: payload.finalScore,
+      finalFeedback: payload.finalFeedback,
+    }),
+  });
+
+  return parseJson<Assignment>(response);
+}

@@ -33,7 +33,6 @@ export function AssignmentDetailPage({ appState }: { appState: AppState }) {
       </Link>
 
       <PageHeading
-        eyebrow="Homework"
         title={`Homework #${homework.id}`}
         description={homework.description}
       />

@@ -27,13 +27,13 @@ export function PageHeading({
   title,
   description,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description: string;
 }) {
   return (
     <header className="page-heading">
-      <span className="section-tag">{eyebrow}</span>
+      {eyebrow ? <span className="section-tag">{eyebrow}</span> : null}
       <h1>{title}</h1>
       <p>{description}</p>
     </header>

@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   ParseIntPipe,
   Post,
   UseGuards,
@@ -13,6 +14,7 @@ import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { Users } from '../users/users.entity';
 import { AssignmentsService } from './assignments.service';
 import { AssignmentResponseDto } from './dto/assignment-response.dto';
+import { ConfirmAssignmentReviewDto } from './dto/confirm-assignment-review.dto';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 
 @ApiTags('assignments')
@@ -45,5 +47,14 @@ export class AssignmentsController {
     @CurrentUser() user: Users,
   ): Promise<AssignmentResponseDto> {
     return this.assignmentsService.findVisibleById(assignmentId, user);
+  }
+
+  @Patch('assignments/:id/confirm')
+  confirmAssignmentReview(
+    @Param('id', ParseIntPipe) assignmentId: number,
+    @Body() payload: ConfirmAssignmentReviewDto,
+    @CurrentUser() user: Users,
+  ): Promise<AssignmentResponseDto> {
+    return this.assignmentsService.confirmReview(assignmentId, payload, user);
   }
 }

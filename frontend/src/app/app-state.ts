@@ -46,7 +46,7 @@ export interface AppState {
     assignmentId: number;
     finalScore: number;
     finalFeedback: string;
-  }) => void;
+  }) => Promise<Assignment>;
   createHomework: (draft: {
     courseId: number;
     description: string;

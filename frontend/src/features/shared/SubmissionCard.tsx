@@ -9,11 +9,13 @@ export function SubmissionCard({
   assignment: Assignment;
   student: User;
 }) {
-  const displayScore = assignment.finalScore ?? assignment.geminiScore ?? 'Pending';
-  const displayFeedback =
-    assignment.finalFeedback ??
-    assignment.geminiFeedback ??
-    'Gemini is still processing this attempt.';
+  const isFinalized = assignment.status === 'graded';
+  const displayScore = isFinalized ? assignment.finalScore ?? 'Pending' : 'Hidden until finalized';
+  const displayFeedback = isFinalized
+    ? assignment.finalFeedback ?? 'Final feedback is not available yet.'
+    : assignment.status === 'review_pending'
+      ? 'Your teacher is reviewing this attempt. Feedback will appear after final confirmation.'
+      : 'Your submission is being processed.';
 
   return (
     <article className="submission-card">
@@ -40,7 +42,9 @@ export function SubmissionCard({
         </div>
       </dl>
 
-      <p className="submission-card__text">{assignment.extractedText}</p>
+      <pre className="submission-card__code">
+        <code>{assignment.extractedText}</code>
+      </pre>
       <p className="submission-card__feedback">{displayFeedback}</p>
       {assignment.fileName ? (
         <small className="submission-card__file">File: {assignment.fileName}</small>

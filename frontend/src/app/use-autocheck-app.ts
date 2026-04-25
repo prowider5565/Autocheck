@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  confirmAssignmentReview as confirmAssignmentReviewRequest,
   createCourse as createCourseRequest,
   createHomework as createHomeworkRequest,
   fetchCourseHomeworks,
@@ -217,22 +218,20 @@ export function useAutocheckApp(): AppState {
 
         return nextAssignment;
       },
-      confirmTeacherReview: ({ assignmentId, finalScore, finalFeedback }) => {
+      confirmTeacherReview: async ({ assignmentId, finalScore, finalFeedback }) => {
+        const confirmedAssignment = await confirmAssignmentReviewRequest({
+          assignmentId,
+          finalScore,
+          finalFeedback,
+        });
+
         setAssignments((current) =>
           current.map((assignment) =>
-            assignment.id === assignmentId
-              ? {
-                  ...assignment,
-                  status: 'graded',
-                  finalScore,
-                  finalFeedback,
-                  teacherEdited:
-                    finalScore !== assignment.geminiScore ||
-                    finalFeedback !== assignment.geminiFeedback,
-                }
-              : assignment,
+            assignment.id === assignmentId ? confirmedAssignment : assignment,
           ),
         );
+
+        return confirmedAssignment;
       },
       createHomework: async ({ courseId, description }) => {
         const homework = await createHomeworkRequest({

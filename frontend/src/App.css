@@ -48,48 +48,35 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-radius: 18px;
-  border: 1px solid rgba(35, 48, 74, 0.1);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 241, 236, 0.92));
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(35, 48, 74, 0.08);
+  background: rgba(255, 255, 255, 0.84);
   color: var(--heading);
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 12px 28px rgba(30, 42, 66, 0.08);
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
+    background 0.2s ease,
     border-color 0.2s ease;
 }
 
 .sidebar__toggle:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 34px rgba(30, 42, 66, 0.12);
+  background: rgba(255, 255, 255, 0.96);
 }
 
 .sidebar__toggle--open {
   border-color: rgba(31, 94, 255, 0.24);
-  box-shadow: 0 18px 36px rgba(31, 94, 255, 0.12);
+  background: rgba(31, 94, 255, 0.05);
 }
 
 .sidebar__toggle-label {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 3px;
-}
-
-.sidebar__toggle-label small {
-  color: var(--muted);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
 }
 
 .sidebar__toggle-label strong {
   color: var(--heading);
-  font-size: 1rem;
+  font-size: 0.96rem;
 }
 
 .sidebar__submenu {
@@ -134,7 +121,7 @@
 }
 
 .sidebar__link--child {
-  margin-left: 10px;
+  margin-left: 6px;
   font-weight: 600;
 }
 
@@ -578,10 +565,6 @@
   margin: 0;
 }
 
-.submission-card__text {
-  margin-bottom: 12px;
-}
-
 .submission-card__feedback {
   color: var(--heading);
 }
@@ -590,6 +573,29 @@
   display: inline-block;
   margin-top: 10px;
   color: var(--muted);
+}
+
+.submission-card__code {
+  margin: 0 0 12px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(35, 48, 74, 0.08);
+  background: #111827;
+  color: #e5eefc;
+  overflow-x: auto;
+  font-family:
+    'JetBrains Mono',
+    'Fira Code',
+    'SFMono-Regular',
+    monospace;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.submission-card__code code {
+  font: inherit;
+  color: inherit;
 }
 
 .review-form,
@@ -781,8 +787,50 @@
   color: var(--muted);
 }
 
+.inline-message--processing {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .inline-message--warning {
   color: #9d6200;
+}
+
+.processing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.processing-indicator__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent-strong);
+  animation: processing-bounce 0.9s infinite ease-in-out;
+}
+
+.processing-indicator__dot:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.processing-indicator__dot:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+@keyframes processing-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
 }
 
 .back-link {
