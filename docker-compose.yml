@@ -29,7 +29,7 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "${APP_PORT}:${APP_PORT}"
+      - "8484:8484"
 
 volumes:
   postgres_data:
