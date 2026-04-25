@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from 'react';
 import type { AppState } from '../../app/app-state';
 import {
+  getActiveCourses,
+  getArchivedCourses,
   getCoursesDescription,
   getCoursesTitle,
   getLatestCourseAssignmentForStudent,
@@ -23,12 +25,16 @@ export function CoursesPage({ appState }: { appState: AppState }) {
   const [description, setDescription] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [courseView, setCourseView] = useState<'active' | 'archived'>('active');
 
   if (!currentUser) {
     return null;
   }
 
   const visibleCourses = getVisibleCourses(currentUser, appState.courses);
+  const activeCourses = getActiveCourses(visibleCourses);
+  const archivedCourses = getArchivedCourses(visibleCourses);
+  const listedCourses = courseView === 'active' ? activeCourses : archivedCourses;
 
   async function handleCreateCourse(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -72,13 +78,14 @@ export function CoursesPage({ appState }: { appState: AppState }) {
         />
         {currentUser.role === 'teacher' ? (
           <button
-            className="primary-button"
+            className="primary-button button-with-icon"
             onClick={() => {
               setModalOpen(true);
               setMessage(null);
             }}
             type="button"
           >
+            <AddIcon />
             Create course
           </button>
         ) : null}
@@ -86,8 +93,13 @@ export function CoursesPage({ appState }: { appState: AppState }) {
       <div className="hero-stats hero-stats--compact">
         <MetricCard
           label="Courses"
-          value={String(visibleCourses.length)}
-          hint="Visible in your dashboard"
+          value={String(activeCourses.length)}
+          hint="Active in your dashboard"
+        />
+        <MetricCard
+          label="Archived"
+          value={String(archivedCourses.length)}
+          hint="Still viewable with submissions"
         />
         <MetricCard
           label="Homeworks"
@@ -116,20 +128,45 @@ export function CoursesPage({ appState }: { appState: AppState }) {
           />
         </div>
       ) : (
-        <div className="course-grid">
-          {visibleCourses.length === 0 ? (
-            <div className="panel">
-              <EmptyState
-                title="No courses yet"
-                description="Once courses exist in the backend, they will appear here and inside the sidebar dropdown."
-              />
-            </div>
-          ) : (
-            visibleCourses.map((course) => (
-              <CourseCard appState={appState} course={course} key={course.id} />
-            ))
-          )}
-        </div>
+        <>
+          <div className="segmented-control" role="tablist" aria-label="Course visibility">
+            <button
+              aria-pressed={courseView === 'active'}
+              className={courseView === 'active' ? 'segmented-control__button segmented-control__button--active' : 'segmented-control__button'}
+              onClick={() => setCourseView('active')}
+              type="button"
+            >
+              Active courses
+            </button>
+            <button
+              aria-pressed={courseView === 'archived'}
+              className={courseView === 'archived' ? 'segmented-control__button segmented-control__button--active' : 'segmented-control__button'}
+              onClick={() => setCourseView('archived')}
+              type="button"
+            >
+              Archived courses
+            </button>
+          </div>
+
+          <div className="course-grid">
+            {listedCourses.length === 0 ? (
+              <div className="panel">
+                <EmptyState
+                  title={courseView === 'active' ? 'No active courses yet' : 'No archived courses yet'}
+                  description={
+                    courseView === 'active'
+                      ? 'Once courses exist in the backend, they will appear here and inside the sidebar dropdown.'
+                      : 'Archived courses will stay available here so you can review their homeworks and submissions anytime.'
+                  }
+                />
+              </div>
+            ) : (
+              listedCourses.map((course) => (
+                <CourseCard appState={appState} course={course} key={course.id} />
+              ))
+            )}
+          </div>
+        </>
       )}
 
       {modalOpen ? (
@@ -185,6 +222,16 @@ export function CoursesPage({ appState }: { appState: AppState }) {
   );
 }
 
+function AddIcon() {
+  return (
+    <span aria-hidden="true" className="button__icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+      </svg>
+    </span>
+  );
+}
+
 function CourseCard({
   appState,
   course,
@@ -220,7 +267,11 @@ function CourseCard({
     <Link className="course-card" to={`/dashboard/courses/${course.id}`}>
       <div className="course-card__header">
         <span className="section-tag">{course.teacherName}</span>
-        {statusLabel ? <StatusPill status={statusLabel} /> : null}
+        {course.isArchived ? (
+          <span className="pill pill--archived">Archived</span>
+        ) : statusLabel ? (
+          <StatusPill status={statusLabel} />
+        ) : null}
       </div>
       <h2>{course.title}</h2>
       <p>{course.description ?? 'No course description yet.'}</p>

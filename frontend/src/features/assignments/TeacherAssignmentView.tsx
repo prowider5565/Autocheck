@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { AppState } from '../../app/app-state';
-import { trimToSixtyWords } from '../../app/helpers';
+import { getScoreColor, trimToSixtyWords } from '../../app/helpers';
 import { EmptyState, StatusPill } from '../../components/ui';
 import type { Assignment, Homework, User } from '../../types';
 
@@ -76,6 +76,11 @@ function TeacherReviewCard({
   );
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const visibleScore = assignment.finalScore ?? assignment.geminiScore;
+  const visibleFeedback =
+    assignment.finalFeedback ??
+    assignment.geminiFeedback ??
+    'Gemini is still producing the draft evaluation.';
 
   async function handleConfirm() {
     const parsedScore = Number(score);
@@ -117,10 +122,6 @@ function TeacherReviewCard({
         <StatusPill status={assignment.status} />
       </header>
 
-      <pre className="submission-card__code">
-        <code>{assignment.extractedText}</code>
-      </pre>
-
       <dl className="submission-card__meta">
         <div>
           <dt>Gemini score</dt>
@@ -136,9 +137,24 @@ function TeacherReviewCard({
         </div>
       </dl>
 
-      <p className="submission-card__feedback">
-        {assignment.geminiFeedback ?? 'Gemini is still producing the draft evaluation.'}
-      </p>
+      <div className="submission-card__body">
+        <pre className="submission-card__code">
+          <code>{assignment.extractedText}</code>
+        </pre>
+
+        <section className="submission-card__result">
+          <p className="submission-card__score-label">
+            {assignment.status === 'graded' ? 'Final score' : 'Current score'}
+          </p>
+          <p
+            className="submission-card__score"
+            style={typeof visibleScore === 'number' ? { color: getScoreColor(visibleScore) } : undefined}
+          >
+            {typeof visibleScore === 'number' ? `${visibleScore}/10` : 'Pending'}
+          </p>
+          <p className="submission-card__feedback">{visibleFeedback}</p>
+        </section>
+      </div>
 
       {assignment.status === 'review_pending' ? (
         <div className="review-form">
@@ -166,14 +182,7 @@ function TeacherReviewCard({
           </button>
           {message ? <p className="inline-message">{message}</p> : null}
         </div>
-      ) : (
-        <div className="final-review">
-          <strong>
-            Final result: {assignment.finalScore ?? assignment.geminiScore}/10
-          </strong>
-          <p>{assignment.finalFeedback ?? assignment.geminiFeedback}</p>
-        </div>
-      )}
+      ) : null}
     </article>
   );
 }

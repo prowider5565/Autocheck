@@ -1,4 +1,4 @@
-import { formatTimestamp } from '../../app/helpers';
+import { formatTimestamp, getScoreColor } from '../../app/helpers';
 import { StatusPill } from '../../components/ui';
 import type { Assignment, User } from '../../types';
 
@@ -36,16 +36,29 @@ export function SubmissionCard({
           <dt>Submitted</dt>
           <dd>{formatTimestamp(assignment.submittedAt)}</dd>
         </div>
-        <div>
-          <dt>Score</dt>
-          <dd>{displayScore}</dd>
-        </div>
       </dl>
 
-      <pre className="submission-card__code">
-        <code>{assignment.extractedText}</code>
-      </pre>
-      <p className="submission-card__feedback">{displayFeedback}</p>
+      <div className="submission-card__body">
+        <pre className="submission-card__code">
+          <code>{assignment.extractedText}</code>
+        </pre>
+
+        <section className="submission-card__result">
+          <p className="submission-card__score-label">Score</p>
+          <p
+            className="submission-card__score"
+            style={
+              typeof displayScore === 'number'
+                ? { color: getScoreColor(displayScore) }
+                : undefined
+            }
+          >
+            {typeof displayScore === 'number' ? `${displayScore}/10` : displayScore}
+          </p>
+          <p className="submission-card__feedback">{displayFeedback}</p>
+        </section>
+      </div>
+
       {assignment.fileName ? (
         <small className="submission-card__file">File: {assignment.fileName}</small>
       ) : null}

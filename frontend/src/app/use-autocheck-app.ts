@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  archiveCourse as archiveCourseRequest,
   confirmAssignmentReview as confirmAssignmentReviewRequest,
   createCourse as createCourseRequest,
   createHomework as createHomeworkRequest,
@@ -250,6 +251,18 @@ export function useAutocheckApp(): AppState {
         });
 
         setCourses((current) => [course, ...current]);
+
+        return course;
+      },
+      archiveCourse: async ({ courseId, isArchived }) => {
+        const course = await archiveCourseRequest({
+          courseId,
+          isArchived,
+        });
+
+        setCourses((current) =>
+          current.map((item) => (item.id === courseId ? course : item)),
+        );
 
         return course;
       },

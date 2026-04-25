@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import type { AppState } from '../../app/app-state';
-import { getVisibleCourses } from '../../app/helpers';
-import type { Role } from '../../types';
+import { getActiveCourses, getArchivedCourses, getVisibleCourses } from '../../app/helpers';
 import { ProfilePanel } from './ProfilePanel';
 
 export function DashboardLayout({ appState }: { appState: AppState }) {
@@ -18,16 +17,12 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
     return null;
   }
 
-  const roleCopy: Record<Role, string> = {
-    admin: 'Admin tools are postponed while the homework flow is being built out.',
-    teacher: 'Courses you own, homeworks you publish, and student attempts you review.',
-    student: 'Courses you can browse, homework prompts you open, and feedback you track.',
-  };
-
   const visibleCourses = useMemo(
     () => getVisibleCourses(currentUser, appState.courses),
     [appState.courses, currentUser],
   );
+  const activeCourses = useMemo(() => getActiveCourses(visibleCourses), [visibleCourses]);
+  const archivedCourses = useMemo(() => getArchivedCourses(visibleCourses), [visibleCourses]);
 
   async function handleLogout() {
     setLogoutBusy(true);
@@ -90,7 +85,23 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
               >
                 All courses
               </NavLink>
-              {visibleCourses.map((course) => (
+              {activeCourses.map((course) => (
+                <NavLink
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'sidebar__link sidebar__link--active sidebar__link--child'
+                      : 'sidebar__link sidebar__link--child'
+                  }
+                  key={course.id}
+                  to={`/dashboard/courses/${course.id}`}
+                >
+                  {course.title}
+                </NavLink>
+              ))}
+              {archivedCourses.length > 0 ? (
+                <p className="sidebar__section-label">Archived</p>
+              ) : null}
+              {archivedCourses.map((course) => (
                 <NavLink
                   className={({ isActive }) =>
                     isActive
@@ -108,15 +119,6 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
         </div>
 
         <div className="sidebar__footer">
-          <div className="sidebar__user-summary">
-            <p className="sidebar__role">{currentUser.role}</p>
-            <strong>{currentProfile.fullName}</strong>
-            <p>{roleCopy[currentUser.role]}</p>
-            {currentProfile.role === 'teacher' ? (
-              <small>Evaluation mode: {currentProfile.evaluationMode}</small>
-            ) : null}
-          </div>
-
           <div className="profile-dock">
             <button
               aria-expanded={profileMenuOpen}
@@ -162,7 +164,8 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
                 }}
                 type="button"
               >
-                Edit
+                <EditIcon />
+                <span>Edit</span>
               </button>
               <button
                 className="profile-dock__item"
@@ -173,7 +176,8 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
                 }}
                 type="button"
               >
-                {logoutBusy ? 'Logging out...' : 'Logout'}
+                <LogoutIcon />
+                <span>{logoutBusy ? 'Logging out...' : 'Logout'}</span>
               </button>
             </div>
           </div>
@@ -205,5 +209,29 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
         </div>
       ) : null}
     </div>
+  );
+}
+
+function EditIcon() {
+  return (
+    <span aria-hidden="true" className="profile-dock__item-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="m4 20 4.2-1 8.6-8.6-3.2-3.2L5 15.8 4 20Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+        <path d="m12.8 7.2 3.2 3.2" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+        <path d="M14.6 5.4 16 4a2.2 2.2 0 0 1 3.1 3.1l-1.4 1.4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+      </svg>
+    </span>
+  );
+}
+
+function LogoutIcon() {
+  return (
+    <span aria-hidden="true" className="profile-dock__item-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M10 5H6.5A2.5 2.5 0 0 0 4 7.5v9A2.5 2.5 0 0 0 6.5 19H10" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+        <path d="M14 8.5 18 12l-4 3.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+        <path d="M9 12h9" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.8" />
+      </svg>
+    </span>
   );
 }

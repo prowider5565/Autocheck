@@ -28,6 +28,7 @@ export class CoursesService {
         teacher: true,
       },
       order: {
+        isArchived: 'ASC',
         createdAt: 'DESC',
       },
     });
@@ -96,6 +97,21 @@ export class CoursesService {
     return course;
   }
 
+  async updateArchiveStatus(
+    courseId: number,
+    isArchived: boolean,
+    user: Users,
+  ): Promise<CourseResponseDto> {
+    const course = await this.findTeacherOwnedCourse(courseId, user);
+
+    course.isArchived = isArchived;
+    course.archivedAt = isArchived ? new Date() : null;
+
+    const savedCourse = await this.courseRepository.save(course);
+
+    return this.toResponseDto(savedCourse);
+  }
+
   ensureCourseVisibility(course: Course, user: Users): void {
     if (user.role === UserRole.TEACHER && course.teacherId !== user.id) {
       throw new ForbiddenException('This course is not available for your account.');
@@ -109,6 +125,8 @@ export class CoursesService {
       description: course.description,
       teacherId: course.teacherId,
       teacherName: course.teacher.fullName,
+      isArchived: course.isArchived,
+      archivedAt: course.archivedAt,
       createdAt: course.createdAt,
     };
   }

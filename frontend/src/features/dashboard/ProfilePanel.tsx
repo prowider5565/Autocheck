@@ -62,14 +62,6 @@ export function ProfilePanel({ appState }: { appState: AppState }) {
 
   return (
     <section className="panel profile-panel">
-      <div className="panel__header">
-        <h2>My profile</h2>
-        <p>
-          This form is connected to the new backend profile APIs. Teachers can also
-          edit their default evaluation mode here.
-        </p>
-      </div>
-
       <form className="stack-form" onSubmit={handleSubmit}>
         <label>
           Full name

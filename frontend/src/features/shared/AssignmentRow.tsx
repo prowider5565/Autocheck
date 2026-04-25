@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { AppState } from '../../app/app-state';
 import { MAX_HOMEWORK_ATTEMPTS, getStudentHomeworkAssignments } from '../../app/helpers';
 import type { Homework } from '../../types';
@@ -15,12 +15,23 @@ export function AssignmentRow({
 }) {
   const { currentUser } = appState;
   const role = currentUser?.role;
+  const navigate = useNavigate();
+  const homeworkLink = `/dashboard/courses/${homework.courseId}/homeworks/${homework.id}`;
+  const showActions = role === 'teacher' && Boolean(onEdit);
 
-  let rightColumn = (
-    <div className="assignment-row__metrics">
-      <span>Description-based homework</span>
-      <span>{MAX_HOMEWORK_ATTEMPTS} attempts max</span>
-    </div>
+  function openHomework() {
+    navigate(homeworkLink);
+  }
+
+  let statusCell = (
+    <td className="homework-table__cell">
+      <span className="homework-table__muted">{MAX_HOMEWORK_ATTEMPTS} attempts max</span>
+    </td>
+  );
+  let metricsCell = (
+    <td className="homework-table__cell">
+      <span className="homework-table__muted">Description-based homework</span>
+    </td>
   );
 
   if (role === 'student' && currentUser) {
@@ -31,11 +42,17 @@ export function AssignmentRow({
     );
     const latest = studentAssignments[studentAssignments.length - 1];
 
-    rightColumn = (
-      <div className="assignment-row__metrics">
-        <span>{studentAssignments.length}/{MAX_HOMEWORK_ATTEMPTS} attempts used</span>
-        {latest ? <StatusPill status={latest.status} /> : <span>No attempts yet</span>}
-      </div>
+    metricsCell = (
+      <td className="homework-table__cell">
+        <span className="homework-table__muted">
+          {studentAssignments.length}/{MAX_HOMEWORK_ATTEMPTS} attempts used
+        </span>
+      </td>
+    );
+    statusCell = (
+      <td className="homework-table__cell">
+        {latest ? <StatusPill status={latest.status} /> : <span className="homework-table__muted">No attempts yet</span>}
+      </td>
     );
   }
 
@@ -47,35 +64,53 @@ export function AssignmentRow({
       (assignment) => assignment.status === 'review_pending',
     ).length;
 
-    rightColumn = (
-      <div className="assignment-row__metrics">
-        <span>{homeworkAssignments.length} attempts submitted</span>
-        <span>{reviewPending} pending review</span>
-      </div>
+    metricsCell = (
+      <td className="homework-table__cell">
+        <span className="homework-table__muted">{homeworkAssignments.length} attempts submitted</span>
+      </td>
+    );
+    statusCell = (
+      <td className="homework-table__cell">
+        <span className="homework-table__muted">{reviewPending} pending review</span>
+      </td>
     );
   }
 
   return (
-    <article className="assignment-row assignment-row--card">
-      <Link
-        className="assignment-row__content"
-        to={`/dashboard/courses/${homework.courseId}/homeworks/${homework.id}`}
-      >
-        <div>
-          <strong>Homework #{homework.id}</strong>
-          <p>{homework.description}</p>
-        </div>
-        {rightColumn}
-      </Link>
-      {role === 'teacher' && onEdit ? (
-        <button
-          className="ghost-button assignment-row__action"
-          onClick={() => onEdit(homework)}
-          type="button"
-        >
-          Edit
-        </button>
+    <tr
+      className="homework-table__row homework-table__row--interactive"
+      onClick={openHomework}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          openHomework();
+        }
+      }}
+      role="link"
+      tabIndex={0}
+    >
+      <td className="homework-table__cell">
+        <strong>Homework #{homework.id}</strong>
+      </td>
+      <td className="homework-table__cell homework-table__cell--description">
+        {homework.description}
+      </td>
+      {metricsCell}
+      {statusCell}
+      {showActions ? (
+        <td className="homework-table__cell homework-table__actions">
+          <button
+            className="ghost-button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onEdit?.(homework);
+            }}
+            type="button"
+          >
+            Edit
+          </button>
+        </td>
       ) : null}
-    </article>
+    </tr>
   );
 }

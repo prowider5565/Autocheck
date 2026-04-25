@@ -20,6 +20,12 @@ export class Course extends BaseModel {
   @Column({ nullable: false })
   teacherId!: number;
 
+  @Column({ nullable: false, default: false })
+  isArchived!: boolean;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  archivedAt!: Date | null;
+
   @ManyToOne(() => Users, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'teacher_id' })
   teacher!: Users;

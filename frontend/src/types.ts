@@ -22,6 +22,8 @@ export interface Course {
   description: string | null;
   teacherId: number;
   teacherName: string;
+  isArchived: boolean;
+  archivedAt?: string | null;
   createdAt?: string;
 }
 

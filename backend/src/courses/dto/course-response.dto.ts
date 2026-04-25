@@ -4,5 +4,7 @@ export class CourseResponseDto {
   description!: string | null;
   teacherId!: number;
   teacherName!: string;
+  isArchived!: boolean;
+  archivedAt!: Date | null;
   createdAt!: Date;
 }

@@ -55,6 +55,7 @@ export interface AppState {
     title: string;
     description: string;
   }) => Promise<Course>;
+  archiveCourse: (draft: { courseId: number; isArchived: boolean }) => Promise<Course>;
   updateHomework: (homeworkId: number, draft: { description: string }) => Promise<Homework>;
   refreshCourseData: () => Promise<void>;
 }

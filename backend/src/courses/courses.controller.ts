@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   ParseIntPipe,
   Post,
   UseGuards,
@@ -14,6 +15,7 @@ import { Users } from '../users/users.entity';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { CourseResponseDto } from './dto/course-response.dto';
+import { UpdateCourseArchiveDto } from './dto/update-course-archive.dto';
 
 @ApiTags('courses')
 @ApiCookieAuth()
@@ -41,5 +43,18 @@ export class CoursesController {
     @CurrentUser() user: Users,
   ): Promise<CourseResponseDto> {
     return this.coursesService.findVisibleCourseById(courseId, user);
+  }
+
+  @Patch(':id/archive')
+  updateArchiveStatus(
+    @Param('id', ParseIntPipe) courseId: number,
+    @Body() payload: UpdateCourseArchiveDto,
+    @CurrentUser() user: Users,
+  ): Promise<CourseResponseDto> {
+    return this.coursesService.updateArchiveStatus(
+      courseId,
+      payload.isArchived,
+      user,
+    );
   }
 }

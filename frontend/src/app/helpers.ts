@@ -17,6 +17,14 @@ export function getVisibleCourses(currentUser: User, courses: Course[]) {
   return courses;
 }
 
+export function getActiveCourses(courses: Course[]) {
+  return courses.filter((course) => !course.isArchived);
+}
+
+export function getArchivedCourses(courses: Course[]) {
+  return courses.filter((course) => course.isArchived);
+}
+
 export function canAccessCourse(user: User, course: Course) {
   if (user.role === 'teacher') {
     return course.teacherId === user.id;
@@ -106,6 +114,13 @@ export function formatTimestamp(timestamp: string) {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(timestamp));
+}
+
+export function getScoreColor(score: number) {
+  const clampedScore = Math.max(0, Math.min(10, score));
+  const hue = (clampedScore / 10) * 120;
+
+  return `hsl(${hue} 68% 42%)`;
 }
 
 export function mapProfileToCurrentUser(

@@ -135,6 +135,24 @@ export async function fetchCourse(courseId: number): Promise<Course> {
   return parseJson<Course>(response);
 }
 
+export async function archiveCourse(payload: {
+  courseId: number;
+  isArchived: boolean;
+}): Promise<Course> {
+  const response = await fetch(`${COURSES_API_BASE}/${payload.courseId}/archive`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      isArchived: payload.isArchived,
+    }),
+  });
+
+  return parseJson<Course>(response);
+}
+
 export async function fetchCourseHomeworks(courseId: number): Promise<Homework[]> {
   const response = await fetch(`${COURSES_API_BASE}/${courseId}/homeworks`, {
     credentials: 'include',
