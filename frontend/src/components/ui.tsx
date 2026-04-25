@@ -1,6 +1,6 @@
-import type { SubmissionStatus } from '../types';
+import type { AssignmentStatus } from '../types';
 
-export function StatusPill({ status }: { status: SubmissionStatus }) {
+export function StatusPill({ status }: { status: AssignmentStatus }) {
   return <span className={`status-pill status-pill--${status}`}>{status}</span>;
 }
 

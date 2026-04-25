@@ -1,18 +1,28 @@
+import { useState, type FormEvent } from 'react';
 import type { AppState } from '../../app/app-state';
 import {
   getCoursesDescription,
   getCoursesTitle,
+  getLatestCourseAssignmentForStudent,
   getVisibleCourses,
 } from '../../app/helpers';
-import { EmptyState, MetricCard, PageHeading, StatusPill } from '../../components/ui';
-import type { Course, SubmissionStatus } from '../../types';
-import { getLatestCourseSubmissionForStudent } from '../../app/helpers';
-import { Link } from 'react-router-dom';
-import { AdminManagement } from '../admin/AdminManagement';
-import { ProfilePanel } from '../dashboard/ProfilePanel';
+import {
+  EmptyState,
+  MetricCard,
+  PageHeading,
+  StatusPill,
+} from '../../components/ui';
+import type { AssignmentStatus, Course } from '../../types';
+import { Link, useNavigate } from 'react-router-dom';
 
 export function CoursesPage({ appState }: { appState: AppState }) {
   const { currentUser } = appState;
+  const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   if (!currentUser) {
     return null;
@@ -20,27 +30,70 @@ export function CoursesPage({ appState }: { appState: AppState }) {
 
   const visibleCourses = getVisibleCourses(currentUser, appState.courses);
 
+  async function handleCreateCourse(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!title.trim()) {
+      setMessage('Please enter a course title.');
+      return;
+    }
+
+    setBusy(true);
+    setMessage(null);
+
+    try {
+      const course = await appState.createCourse({
+        title: title.trim(),
+        description: description.trim(),
+      });
+
+      setModalOpen(false);
+      setTitle('');
+      setDescription('');
+      navigate(`/dashboard/courses/${course.id}`);
+    } catch (caughtError) {
+      setMessage(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to create the course right now.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="page-stack">
-      <PageHeading
-        eyebrow="My courses"
-        title={getCoursesTitle(currentUser.role)}
-        description={getCoursesDescription(currentUser.role)}
-      />
-
-      <ProfilePanel appState={appState} />
-
+      <div className="panel__header panel__header--split">
+        <PageHeading
+          eyebrow="My courses"
+          title={getCoursesTitle(currentUser.role)}
+          description={getCoursesDescription(currentUser.role)}
+        />
+        {currentUser.role === 'teacher' ? (
+          <button
+            className="primary-button"
+            onClick={() => {
+              setModalOpen(true);
+              setMessage(null);
+            }}
+            type="button"
+          >
+            Create course
+          </button>
+        ) : null}
+      </div>
       <div className="hero-stats hero-stats--compact">
         <MetricCard
           label="Courses"
           value={String(visibleCourses.length)}
-          hint="Role-aware visibility"
+          hint="Visible in your dashboard"
         />
         <MetricCard
-          label="Assignments"
+          label="Homeworks"
           value={String(
-            appState.assignments.filter((assignment) =>
-              visibleCourses.some((course) => course.id === assignment.courseId),
+            appState.homeworks.filter((homework) =>
+              visibleCourses.some((course) => course.id === homework.courseId),
             ).length,
           )}
           hint="Across visible courses"
@@ -48,22 +101,27 @@ export function CoursesPage({ appState }: { appState: AppState }) {
         <MetricCard
           label="Processing now"
           value={String(
-            appState.submissions.filter((submission) => submission.status === 'processing')
+            appState.assignments.filter((assignment) => assignment.status === 'processing')
               .length,
           )}
-          hint="Async Gemini queue"
+          hint="Student attempts awaiting evaluation"
         />
       </div>
 
-      {currentUser.role === 'admin' ? (
-        <AdminManagement appState={appState} />
+      {!appState.dataResolved ? (
+        <div className="panel">
+          <EmptyState
+            title="Loading courses"
+            description="The dashboard is fetching your current course and homework data."
+          />
+        </div>
       ) : (
         <div className="course-grid">
           {visibleCourses.length === 0 ? (
             <div className="panel">
               <EmptyState
                 title="No courses yet"
-                description="Your authentication is now real. The course area is still backed by mock course data, so newly registered accounts will stay empty until enrollment and course APIs are added."
+                description="Once courses exist in the backend, they will appear here and inside the sidebar dropdown."
               />
             </div>
           ) : (
@@ -73,6 +131,56 @@ export function CoursesPage({ appState }: { appState: AppState }) {
           )}
         </div>
       )}
+
+      {modalOpen ? (
+        <div className="modal-backdrop" role="presentation">
+          <div aria-modal="true" className="modal-card" role="dialog">
+            <div className="panel__header panel__header--split">
+              <div>
+                <h2>Create course</h2>
+                <p>Create the course first, then you can add homework inside it.</p>
+              </div>
+              <button
+                className="ghost-button"
+                onClick={() => {
+                  setModalOpen(false);
+                  setMessage(null);
+                }}
+                type="button"
+              >
+                Close
+              </button>
+            </div>
+
+            <form className="stack-form" onSubmit={handleCreateCourse}>
+              <label>
+                Course title
+                <input
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder="Algebra Foundations"
+                  value={title}
+                />
+              </label>
+
+              <label>
+                Description
+                <textarea
+                  onChange={(event) => setDescription(event.target.value)}
+                  placeholder="Write a short course description..."
+                  rows={6}
+                  value={description}
+                />
+              </label>
+
+              {message ? <p className="inline-message inline-message--warning">{message}</p> : null}
+
+              <button className="primary-button" disabled={busy} type="submit">
+                {busy ? 'Creating...' : 'Create course'}
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -84,42 +192,41 @@ function CourseCard({
   appState: AppState;
   course: Course;
 }) {
-  const teacher = appState.users.find((user) => user.id === course.teacherId);
-  const courseAssignments = appState.assignments.filter(
-    (assignment) => assignment.courseId === course.id,
+  const courseHomeworks = appState.homeworks.filter(
+    (homework) => homework.courseId === course.id,
   );
 
   let scoreCopy = 'Course overview ready';
-  let statusLabel: SubmissionStatus | null = null;
+  let statusLabel: AssignmentStatus | null = null;
 
   if (appState.currentUser?.role === 'student') {
-    const latestStudentSubmission = getLatestCourseSubmissionForStudent(
+    const latestAssignment = getLatestCourseAssignmentForStudent(
       course.id,
       appState.currentUser.id,
+      appState.homeworks,
       appState.assignments,
-      appState.submissions,
     );
 
-    if (latestStudentSubmission) {
-      statusLabel = latestStudentSubmission.status;
+    if (latestAssignment) {
+      statusLabel = latestAssignment.status;
       scoreCopy =
-        latestStudentSubmission.status === 'graded'
-          ? `Latest score ${latestStudentSubmission.finalScore ?? latestStudentSubmission.geminiScore}/10`
-          : 'Newest homework is still being processed';
+        latestAssignment.status === 'graded'
+          ? `Latest score ${latestAssignment.finalScore ?? latestAssignment.geminiScore}/10`
+          : 'Newest submission is still being processed';
     }
   }
 
   return (
     <Link className="course-card" to={`/dashboard/courses/${course.id}`}>
       <div className="course-card__header">
-        <span className="section-tag">{teacher?.fullName ?? 'Teacher missing'}</span>
+        <span className="section-tag">{course.teacherName}</span>
         {statusLabel ? <StatusPill status={statusLabel} /> : null}
       </div>
       <h2>{course.title}</h2>
-      <p>{course.description}</p>
+      <p>{course.description ?? 'No course description yet.'}</p>
       <div className="course-card__meta">
-        <span>{courseAssignments.length} assignments</span>
-        <span>{course.studentIds.length} students</span>
+        <span>{courseHomeworks.length} homeworks</span>
+        <span>{appState.currentUser?.role === 'teacher' ? 'Owned by you' : 'Open to students'}</span>
       </div>
       <strong className="course-card__score">{scoreCopy}</strong>
     </Link>

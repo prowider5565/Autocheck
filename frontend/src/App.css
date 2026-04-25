@@ -43,6 +43,76 @@
   margin-top: 18px;
 }
 
+.sidebar__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(35, 48, 74, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 241, 236, 0.92));
+  color: var(--heading);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(30, 42, 66, 0.08);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.sidebar__toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 34px rgba(30, 42, 66, 0.12);
+}
+
+.sidebar__toggle--open {
+  border-color: rgba(31, 94, 255, 0.24);
+  box-shadow: 0 18px 36px rgba(31, 94, 255, 0.12);
+}
+
+.sidebar__toggle-label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+.sidebar__toggle-label small {
+  color: var(--muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sidebar__toggle-label strong {
+  color: var(--heading);
+  font-size: 1rem;
+}
+
+.sidebar__submenu {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    max-height 0.28s ease,
+    opacity 0.22s ease,
+    transform 0.22s ease,
+    margin-top 0.22s ease;
+}
+
+.sidebar__submenu--open {
+  max-height: 420px;
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .sidebar__link {
   display: block;
   padding: 14px 16px;
@@ -63,15 +133,35 @@
   transform: translateX(3px);
 }
 
-.sidebar__user {
+.sidebar__link--child {
+  margin-left: 10px;
+  font-weight: 600;
+}
+
+.sidebar__chevron {
+  transition: transform 0.2s ease;
+}
+
+.sidebar__chevron--open {
+  transform: rotate(180deg);
+}
+
+.sidebar__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sidebar__user-summary {
   padding: 18px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(35, 48, 74, 0.08);
 }
 
-.sidebar__user p,
-.sidebar__user strong {
+.sidebar__user-summary p,
+.sidebar__user-summary strong,
+.sidebar__user-summary small {
   margin: 0;
 }
 
@@ -81,6 +171,101 @@
   color: var(--muted);
   font-size: 0.75rem;
   margin-bottom: 8px;
+}
+
+.profile-dock {
+  position: relative;
+}
+
+.profile-dock__trigger {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(35, 48, 74, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.profile-dock__trigger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(30, 42, 66, 0.1);
+}
+
+.profile-dock__avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(31, 94, 255, 0.16), rgba(7, 151, 120, 0.12));
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+.profile-dock__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+}
+
+.profile-dock__meta small {
+  color: var(--muted);
+}
+
+.profile-dock__menu {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 10px);
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(35, 48, 74, 0.08);
+  box-shadow: 0 22px 40px rgba(18, 32, 51, 0.16);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.profile-dock__menu--open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.profile-dock__item {
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: rgba(247, 243, 238, 0.9);
+  color: var(--heading);
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.profile-dock__item:hover {
+  transform: translateX(2px);
+  background: rgba(31, 94, 255, 0.08);
 }
 
 .main-panel {
@@ -199,6 +384,13 @@
   margin-top: 8px;
 }
 
+.panel__header--split {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .course-card {
   display: flex;
   flex-direction: column;
@@ -284,6 +476,24 @@
 
 .assignment-row p {
   margin-top: 8px;
+}
+
+.assignment-row--card {
+  align-items: stretch;
+}
+
+.assignment-row__content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  flex: 1;
+  color: inherit;
+  text-decoration: none;
+}
+
+.assignment-row__action {
+  white-space: nowrap;
 }
 
 .status-pill,
@@ -602,6 +812,43 @@
   margin-top: 14px;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(18, 32, 51, 0.28);
+  backdrop-filter: blur(8px);
+  z-index: 20;
+}
+
+.modal-card {
+  width: min(680px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding: 24px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid var(--border);
+  box-shadow: 0 28px 64px rgba(18, 32, 51, 0.18);
+}
+
+.modal-card--profile {
+  width: min(760px, 100%);
+}
+
+.profile-panel {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.profile-panel .panel__header {
+  margin-bottom: 16px;
+}
+
 @media (max-width: 1180px) {
   .dashboard-shell {
     grid-template-columns: 1fr;
@@ -633,11 +880,13 @@
   .sidebar,
   .panel,
   .auth-card,
-  .auth-hero {
+  .auth-hero,
+  .modal-card {
     padding: 20px;
   }
 
   .assignment-row,
+  .assignment-row__content,
   .course-card__header,
   .submission-card__header,
   .course-admin-card__header,
@@ -649,6 +898,10 @@
 
   .assignment-row {
     align-items: flex-start;
+  }
+
+  .panel__header--split {
+    flex-direction: column;
   }
 
   .hero-stats {

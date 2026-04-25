@@ -6,6 +6,8 @@ export interface AppConfig {
   jwtExpiresIn: string;
   authCookieName: string;
   frontendUrl: string;
+  geminiApiKey: string;
+  geminiModel: string;
   googleClientId: string;
   googleClientSecret: string;
   googleCallbackUrl: string;
@@ -17,6 +19,9 @@ export const appConfigFactory = (config: ConfigService): AppConfig => ({
   jwtExpiresIn: config.get<string>('JWT_EXPIRES_IN') ?? '7d',
   authCookieName: config.get<string>('AUTH_COOKIE_NAME') ?? 'autocheck_auth',
   frontendUrl: config.get<string>('FRONTEND_URL') ?? 'http://localhost:5173',
+  geminiApiKey: config.get<string>('GEMINI_API_KEY') ?? '',
+  geminiModel:
+    config.get<string>('GEMINI_MODEL') ?? 'gemini-2.5-flash',
   googleClientId: config.get<string>('GOOGLE_CLIENT_ID') ?? '',
   googleClientSecret: config.get<string>('GOOGLE_CLIENT_SECRET') ?? '',
   googleCallbackUrl:

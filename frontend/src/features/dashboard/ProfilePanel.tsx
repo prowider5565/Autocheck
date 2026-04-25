@@ -61,7 +61,7 @@ export function ProfilePanel({ appState }: { appState: AppState }) {
   }
 
   return (
-    <section className="panel">
+    <section className="panel profile-panel">
       <div className="panel__header">
         <h2>My profile</h2>
         <p>

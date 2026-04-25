@@ -38,7 +38,7 @@ function AutocheckApp() {
             element={<CourseDetailPage appState={appState} />}
           />
           <Route
-            path="courses/:courseId/assignments/:assignmentId"
+            path="courses/:courseId/homeworks/:homeworkId"
             element={<AssignmentDetailPage appState={appState} />}
           />
         </Route>

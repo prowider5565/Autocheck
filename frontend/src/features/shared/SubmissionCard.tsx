@@ -1,39 +1,38 @@
 import { formatTimestamp } from '../../app/helpers';
 import { StatusPill } from '../../components/ui';
-import type { Submission, User } from '../../types';
+import type { Assignment, User } from '../../types';
 
 export function SubmissionCard({
-  submission,
+  assignment,
   student,
 }: {
-  submission: Submission;
+  assignment: Assignment;
   student: User;
 }) {
-  const displayScore =
-    submission.finalScore ?? submission.geminiScore ?? 'Pending';
+  const displayScore = assignment.finalScore ?? assignment.geminiScore ?? 'Pending';
   const displayFeedback =
-    submission.finalFeedback ??
-    submission.geminiFeedback ??
+    assignment.finalFeedback ??
+    assignment.geminiFeedback ??
     'Gemini is still processing this attempt.';
 
   return (
     <article className="submission-card">
       <header className="submission-card__header">
         <div>
-          <strong>Attempt {submission.attemptNumber}</strong>
+          <strong>Attempt {assignment.attemptNumber}</strong>
           <p>{student.fullName}</p>
         </div>
-        <StatusPill status={submission.status} />
+        <StatusPill status={assignment.status} />
       </header>
 
       <dl className="submission-card__meta">
         <div>
           <dt>Source</dt>
-          <dd>{submission.sourceType}</dd>
+          <dd>{assignment.sourceType}</dd>
         </div>
         <div>
           <dt>Submitted</dt>
-          <dd>{formatTimestamp(submission.submittedAt)}</dd>
+          <dd>{formatTimestamp(assignment.submittedAt)}</dd>
         </div>
         <div>
           <dt>Score</dt>
@@ -41,10 +40,10 @@ export function SubmissionCard({
         </div>
       </dl>
 
-      <p className="submission-card__text">{submission.extractedText}</p>
+      <p className="submission-card__text">{assignment.extractedText}</p>
       <p className="submission-card__feedback">{displayFeedback}</p>
-      {submission.fileName ? (
-        <small className="submission-card__file">File: {submission.fileName}</small>
+      {assignment.fileName ? (
+        <small className="submission-card__file">File: {assignment.fileName}</small>
       ) : null}
     </article>
   );

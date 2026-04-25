@@ -1,6 +1,5 @@
 export type Role = 'student' | 'teacher' | 'admin';
 
-export type EvaluationMode = 'automatic' | 'partial';
 export type TeacherEvaluationMode =
   | 'ai_automated'
   | 'partial_assisted'
@@ -8,39 +7,38 @@ export type TeacherEvaluationMode =
 
 export type SubmissionSourceType = 'text' | 'image' | 'txt_file';
 
-export type SubmissionStatus = 'processing' | 'review_pending' | 'graded';
+export type AssignmentStatus = 'processing' | 'review_pending' | 'graded';
 
 export interface User {
-  id: string;
+  id: number;
   fullName: string;
   email: string;
   role: Role;
 }
 
 export interface Course {
-  id: string;
+  id: number;
   title: string;
+  description: string | null;
+  teacherId: number;
+  teacherName: string;
+  createdAt?: string;
+}
+
+export interface Homework {
+  id: number;
+  courseId: number;
   description: string;
-  teacherId: string;
-  studentIds: string[];
+  createdAt: string;
 }
 
 export interface Assignment {
-  id: string;
-  courseId: string;
-  title: string;
-  instructions: string;
-  evaluationMode: EvaluationMode;
-  maxAttempts: number;
-}
-
-export interface Submission {
-  id: string;
-  assignmentId: string;
-  studentId: string;
+  id: number;
+  homeworkId: number;
+  studentId: number;
   attemptNumber: number;
   sourceType: SubmissionSourceType;
-  status: SubmissionStatus;
+  status: AssignmentStatus;
   submittedAt: string;
   extractedText: string;
   fileName?: string;

@@ -2,53 +2,77 @@
 
 ## Summary
 
-This plan defines the first production-oriented version of Autocheck: a web application where teachers create course assignments, students submit homework attempts, Gemini evaluates submissions asynchronously, and admins manage users, courses, and enrollments. The implementation should cover authentication, role-based dashboards, assignment and submission workflows, async evaluation states, PostgreSQL-backed persistence, and local seed data.
+This plan defines the current v1 implementation target for Autocheck: a web application where teachers create course homeworks, students submit assignment attempts for those homeworks, and Gemini evaluates those submissions asynchronously. The near-term goal is to support authentication, role-based dashboards, course browsing, homework creation/editing, assignment submission tracking, and evaluation status handling with PostgreSQL-backed persistence.
 
-This plan is intentionally decision-complete for implementation against the current repo shape:
+This plan is intentionally aligned to the current decisions locked during implementation:
 
-- `frontend/` is currently a Vite React app with starter content.
-- `backend/` is currently a NestJS app with PostgreSQL TypeORM configuration, a minimal `User` entity, and placeholder `users` / `homework` modules.
-- You will later provide the DBML schema; implementation should align to that schema when coding begins, but the product behavior below is already fixed.
+- `frontend/` is a Vite React app with a dashboard shell already taking shape.
+- `backend/` is a NestJS app with PostgreSQL TypeORM configuration and an existing `users` module.
+- Backend domain split for this phase must be:
+  - `users`
+  - `courses`
+  - `homeworks`
+  - `assignments`
+  - `evaluation`
+- Enrollment management is postponed for now.
+- Admin management is postponed for now.
 
 ## Product Decisions
 
 ### Roles
 
-- `admin`
-  - Root access within v1 admin scope.
-  - Can create and edit teachers, students, courses, and enrollments.
-  - Must assign exactly one teacher to each course.
 - `teacher`
   - Owns courses assigned to them.
-  - Creates and edits assignments inside their courses.
-  - Can see all attempts for assignments in their courses.
-  - In partial evaluation mode, can edit both Gemini score and feedback before confirming.
+  - Creates and edits homeworks inside their own courses.
+  - Can see assignment attempts for homeworks in their own courses.
+  - Can confirm or adjust evaluation results when review is required.
 - `student`
   - Can sign up themselves.
-  - Can see only their own enrolled courses, assignments, attempts, and results.
-  - Can submit homework attempts up to the allowed limit.
+  - Can see all courses for now.
+  - Can open homeworks, submit assignment attempts, and view only their own results.
 
 ### Academic Structure
 
 - No `school` management in v1.
 - No `lesson` entity in v1.
+- No enrollment feature in this phase.
 - Data hierarchy is:
   - `course`
-  - `assignment` (same meaning as homework)
-  - `submission attempt`
-  - `evaluation result`
-- Each course has exactly one teacher.
-- A student may be enrolled in many courses across different teachers.
-- A teacher may own many courses.
+  - `homework`
+  - `assignment` (student submission attempt)
+  - `evaluation`
 
-### Assignment / Homework Behavior
+### Homework vs Assignment
 
-- Assignments are attached directly to courses.
-- Assignment and homework are the same entity in product language.
-- Each assignment supports up to `3` attempts per student.
-- Students must wait until the previous attempt is no longer under evaluation before submitting the next attempt.
-- The final displayed grade for an assignment is the latest graded attempt.
-- Teachers are allowed to edit assignments even after students have already submitted attempts.
+This distinction is now locked:
+
+- `homework`
+  - Teacher-created object inside a course.
+  - Represents the task or prompt students should respond to.
+  - For the current phase, homework contains only:
+    - `courseId`
+    - `description`
+- `assignment`
+  - Student submission record for a homework.
+  - Tracks attempts, uploaded content, extracted text, status, and grading result.
+
+In other words:
+
+- teachers create `homeworks`
+- students create `assignments`
+
+### Homework Behavior
+
+- Homeworks are attached directly to courses.
+- Teachers can create a homework by selecting a course and entering a description.
+- Teachers can edit only the homework description in the current phase.
+- Moving a homework to another course is out of scope for now.
+
+### Assignment Behavior
+
+- Each student may create up to `3` assignment attempts per homework.
+- Students must wait until the latest attempt is no longer under evaluation before submitting another attempt.
+- The final displayed result for a homework is based on the latest graded assignment attempt.
 
 ### Submission Types
 
@@ -63,27 +87,21 @@ This plan is intentionally decision-complete for implementation against the curr
 ### Evaluation Behavior
 
 - Gemini input must contain:
-  - assignment instructions created by the teacher
+  - homework description created by the teacher
   - student submission text content
 - Gemini output must contain:
   - numeric score in range `0-10`
   - feedback limited to `60 words` maximum
-- Evaluation modes:
-  - `automatic`
-    - Gemini output becomes the final grade immediately after processing completes.
-  - `partial`
-    - Gemini produces a draft result.
-    - Teacher reviews and may edit both score and feedback.
-    - Final grade is set only when teacher confirms.
+- Evaluation modes may exist in the system design, but homework creation in the current UI phase requires only `description`.
 
-### Submission Statuses
+### Assignment Statuses
 
 - `processing`
-  - Gemini is currently evaluating the latest submission.
+  - Gemini is currently evaluating the latest assignment attempt.
 - `review_pending`
-  - Gemini finished, and teacher review is required because the assignment uses partial evaluation.
+  - Gemini finished and teacher review is required.
 - `graded`
-  - Final score and feedback are available, either automatically from Gemini or after teacher confirmation.
+  - Final score and feedback are available.
 - No failed state exists in v1.
 
 ### Auth Behavior
@@ -92,63 +110,47 @@ This plan is intentionally decision-complete for implementation against the curr
   - email/password
   - Google sign-in
 - Only `sign up` and `login` are in v1 scope.
-- If a Google-authenticated user has no existing account:
-  - redirect to sign-up page
-  - prefill email
-  - no moderation or approval flow
-- Assumption locked for v1:
-  - public self-sign-up is allowed for `student` and `teacher`
-  - `admin` accounts are not publicly self-created and should be seeded or created by existing admin workflows
+- Public self-sign-up is allowed for:
+  - `student`
+  - `teacher`
+- Admin creation and management are postponed for now.
 
 ### Dashboard Navigation
 
 - The app shell uses:
   - left sidebar
   - right content area
-- Sidebar contains only one item in v1: `My courses`
-- `My courses` behavior depends on role:
-  - student: enrolled courses
-  - teacher: owned courses
-  - admin: manageable course list
-
-### UI Design Direction
-
-- Use a minimal SaaS design pattern.
-- Design principles:
-  - clean layout with strong spacing and simple hierarchy
-  - calm neutral surfaces with 1 accent color family
-  - strong table / card readability
-  - restrained motion and no ornamental academic styling
-  - dashboard-first interaction model
+- Sidebar contains one top-level item in v1: `My courses`
+- `My courses` is a dropdown:
+  - collapsed by default
+  - expands to reveal course items
+- Clicking a course item should keep the sidebar visible and render the course detail page on the right side of the layout.
 
 ## Backend Implementation Plan
 
 ### Core Modules
 
-Replace the placeholder backend shape with domain-oriented Nest modules:
+Use domain-oriented Nest modules:
 
-- `auth`
 - `users`
 - `courses`
+- `homeworks`
 - `assignments`
-- `submissions`
-- `admin`
 - `evaluation`
-- shared upload / storage support
 
-Keep `AppModule` as the composition root and register all modules there.
+Keep `AppModule` as the composition root and register all active modules there.
 
 ### Entities and Relationships
 
-The exact final schema should follow the DBML you provide later, but implementation should target this domain model:
+The backend should target this model:
 
 - `User`
   - id
   - email
-  - password hash nullable for Google-only accounts if needed
+  - password hash
   - full name
-  - role: `admin | teacher | student`
-  - auth provider metadata sufficient for email/password and Google login
+  - role: `teacher | student`
+  - auth provider metadata as needed for email/password and Google login
   - createdAt and updatedAt
 - `Course`
   - id
@@ -156,23 +158,14 @@ The exact final schema should follow the DBML you provide later, but implementat
   - description optional
   - teacherId required
   - timestamps
-- `Enrollment`
+- `Homework`
   - id
   - courseId
-  - studentId
+  - description
   - timestamps
-  - unique constraint on `courseId + studentId`
 - `Assignment`
   - id
-  - courseId
-  - title
-  - instructions
-  - evaluationMode: `automatic | partial`
-  - maxAttempts default `3`
-  - timestamps
-- `Submission`
-  - id
-  - assignmentId
+  - homeworkId
   - studentId
   - attemptNumber
   - sourceType: `text | image | txt_file`
@@ -181,10 +174,10 @@ The exact final schema should follow the DBML you provide later, but implementat
   - filePath nullable for uploaded image / txt file
   - status: `processing | review_pending | graded`
   - timestamps
-  - unique constraint on `assignmentId + studentId + attemptNumber`
+  - unique constraint on `homeworkId + studentId + attemptNumber`
 - `Evaluation`
   - id
-  - submissionId
+  - assignmentId
   - geminiScore nullable until returned
   - geminiFeedback nullable until returned
   - finalScore nullable until finalized
@@ -194,44 +187,30 @@ The exact final schema should follow the DBML you provide later, but implementat
   - finalizedAt nullable
   - timestamps
 
-Important relationship rules:
+Relationship rules:
 
-- one teacher per course
-- many students per course through enrollments
-- many assignments per course
-- many submissions per assignment per student, capped at 3
-- one evaluation record per submission
+- one teacher owns many courses
+- one course has many homeworks
+- one homework has many assignment attempts from many students
+- one assignment has one evaluation record
 
-### Auth and Authorization
+### Authorization Rules
 
-Implement auth with clear separation between authentication and role enforcement:
-
-- email/password registration and login endpoints
-- Google sign-in flow endpoint pair
-- password hashing with a secure one-way algorithm
-- JWT-based session auth for frontend API access
-- route guards for authenticated requests
-- role guards for admin / teacher / student access control
-
-Required auth behavior:
-
-- email must be unique across all users
-- Google login should locate a user by email or provider identity
-- if Google email is not found, frontend is redirected to sign-up with that email prefilled
-- public sign-up should not allow creation of admin accounts
-
-Authorization rules:
-
-- admin:
-  - full access to admin CRUD and course/enrollment management
 - teacher:
-  - only own courses, assignments, course-level submissions, and pending reviews
+  - can access only own courses
+  - can create and edit only own homeworks
+  - can view assignment attempts only for own course homeworks
 - student:
-  - only own enrollments, assignments in enrolled courses, own submissions, own grades
+  - can read all courses for now
+  - can read homework lists in visible courses
+  - can create only their own assignment attempts
+  - can read only their own assignments and grades
 
-### API Surface
+## API Surface
 
-Define REST APIs grouped by domain. Final DTO names can vary, but behavior must match.
+Define REST APIs grouped by domain.
+
+### Auth / Users
 
 - `POST /auth/signup`
   - create student or teacher account only
@@ -244,62 +223,53 @@ Define REST APIs grouped by domain. Final DTO names can vary, but behavior must 
 - `GET /auth/me`
   - current authenticated user and role
 
+### Courses
+
 - `GET /courses`
-  - role-aware:
-    - admin: all courses
-    - teacher: owned courses
-    - student: enrolled courses
-- `POST /courses`
-  - admin only
-- `PATCH /courses/:id`
-  - admin only
+  - teacher: only teacher-owned courses
+  - student: all courses
 - `GET /courses/:id`
   - visible only if role is allowed to access that course
 
-- `POST /enrollments`
-  - admin only
-- `PATCH /enrollments/:id`
-  - admin only if editable fields are present in schema
-- `DELETE /enrollments/:id`
-  - admin only
+### Homeworks
 
-- `GET /courses/:courseId/assignments`
-  - teacher sees owned course assignments
-  - student sees assignments in enrolled courses
-- `POST /courses/:courseId/assignments`
+- `GET /courses/:courseId/homeworks`
+  - teacher sees homeworks in owned courses
+  - student sees homeworks in visible courses
+- `POST /courses/:courseId/homeworks`
   - teacher only for owned courses
-- `PATCH /assignments/:id`
+  - request body for now:
+    - `description`
+- `PATCH /homeworks/:id`
   - teacher only for owned courses
-- `GET /assignments/:id`
+  - editable field for now:
+    - `description`
+- `GET /homeworks/:id`
   - role-aware visibility
 
-- `GET /assignments/:assignmentId/submissions/me`
-  - student view of own attempts for one assignment
-- `POST /assignments/:assignmentId/submissions`
-  - student submits a new attempt
-  - reject if not enrolled
+### Assignments
+
+- `GET /homeworks/:homeworkId/assignments/me`
+  - student view of their own assignment attempts for one homework
+- `POST /homeworks/:homeworkId/assignments`
+  - student submits a new assignment attempt
   - reject if 3 attempts already used
   - reject if latest attempt is not yet finalized
-- `GET /courses/:courseId/submissions`
-  - teacher view of submissions across owned course
-- `GET /submissions/:id`
-  - student own submission, teacher owned-course submission, admin optional if needed for management
+- `GET /courses/:courseId/assignments`
+  - teacher view of assignment attempts across owned course
+- `GET /assignments/:id`
+  - student own assignment attempt or teacher-owned course assignment attempt
 
-- `PATCH /evaluations/:submissionId/confirm`
-  - teacher confirms partial evaluation
+### Evaluation
+
+- `PATCH /evaluations/:assignmentId/confirm`
+  - teacher confirms review-required evaluation
   - payload may override score and feedback
-  - only allowed for owned course and `review_pending` submission
+  - only allowed for teacher-owned course assignments in `review_pending`
 
-- `GET /admin/users`
-  - admin filtered list of teachers and students
-- `POST /admin/users`
-  - admin create teacher or student
-- `PATCH /admin/users/:id`
-  - admin edit teacher or student
+## Submission Normalization Flow
 
-### Submission Normalization Flow
-
-Every submission should be normalized into text before Gemini evaluation:
+Every assignment submission should be normalized into text before Gemini evaluation:
 
 - direct text input
   - save raw text as submission content
@@ -323,9 +293,9 @@ Implementation notes:
 - validate file type and reasonable size limits
 - reject empty extracted text
 
-### Async Evaluation Flow
+## Async Evaluation Flow
 
-Use backend-managed asynchronous processing after submission creation.
+Use backend-managed asynchronous processing after assignment creation.
 
 Decision locked for v1:
 
@@ -334,322 +304,136 @@ Decision locked for v1:
 
 Flow:
 
-1. Student creates submission attempt.
-2. Backend validates enrollment, attempt count, and previous attempt completion.
-3. Backend stores submission with `processing`.
+1. Student creates an assignment attempt.
+2. Backend validates attempt count and previous attempt completion.
+3. Backend stores the assignment with `processing`.
 4. Backend normalizes submission text.
-5. Backend creates evaluation record.
+5. Backend creates an evaluation record.
 6. Backend triggers async Gemini evaluation after request completes.
 7. Gemini response is parsed and validated.
-8. If assignment mode is `automatic`:
-   - write Gemini score/feedback into both Gemini and final fields
-   - mark submission `graded`
-9. If assignment mode is `partial`:
-   - store Gemini score/feedback
-   - leave final fields empty until teacher confirmation
-   - mark submission `review_pending`
+8. Backend writes evaluation results and updates assignment status.
 
 Implementation constraint:
 
 - the submit API must return quickly after persistence, without waiting for Gemini completion
-- use Nest scheduling / queue-like service abstraction, but keep v1 simple enough to run in a single backend instance
-- encapsulate Gemini calls behind an evaluation provider service so Gemini-specific code is isolated
 
-### Gemini Integration Contract
-
-Gemini integration should be designed behind an internal service abstraction:
-
-- input:
-  - assignment title if useful
-  - assignment instructions
-  - normalized student submission text
-- output contract:
-  - score integer or decimal constrained to `0-10`
-  - feedback no longer than `60 words`
-
-Backend responsibilities:
-
-- construct a strict prompt that enforces the output contract
-- reject / normalize malformed model responses
-- trim or reject feedback exceeding the agreed word limit
-- keep provider-specific env vars in backend `.env`
-
-### Validation and Business Rules
+## Validation and Business Rules
 
 - unique user email
-- no public admin signup
 - course must always reference exactly one teacher
-- students can submit only to assignments in courses where they are enrolled
-- teacher can only operate inside owned courses
-- max attempts per assignment per student is `3`
-- next attempt blocked until previous attempt leaves `processing` or `review_pending`
-- latest graded attempt is the displayed final result
-- only teacher can confirm partial evaluations
+- teachers can operate only inside owned courses
+- homework creation is teacher-only
+- homework editing is description-only for now
+- max attempts per homework per student is `3`
+- next attempt is blocked until previous attempt leaves `processing` or `review_pending`
+- only the assignment owner can view student-side attempt history
+- only the course owner can review teacher-side assignment history
 - feedback limit is `60 words`
-
-### Seed / Dummy Data
-
-Add a seed mechanism to populate local development data in PostgreSQL.
-
-Seed dataset should include:
-
-- 1 admin user
-- at least 3 teachers
-- at least 8 students
-- at least 4 courses
-- valid enrollments across multiple teachers
-- assignments in both `automatic` and `partial` modes
-- submissions covering:
-  - processing
-  - review_pending
-  - graded
-  - multiple attempts
-
-Seed goals:
-
-- allow frontend dashboard demos for all roles
-- cover all main states without manual setup
-- use readable fake names and course titles
-
-Implementation preference:
-
-- add a dedicated npm script for seeding
-- seed should be repeatable and idempotent enough for local development expectations
 
 ## Frontend Implementation Plan
 
-### Frontend Stack Shape
-
-Build on the existing Vite React app and replace the starter screen completely.
-
-Recommended additions when coding begins:
-
-- routing for auth and dashboard flows
-- lightweight state/data fetching layer
-- form validation utilities
-- role-aware page protection
-
 ### Route Structure
 
-Use a simple role-aware route layout:
+Use a role-aware route layout:
 
 - `/login`
 - `/signup`
 - `/dashboard`
 - `/dashboard/courses`
 - `/dashboard/courses/:courseId`
-- `/dashboard/courses/:courseId/assignments/:assignmentId`
-- admin management routes may live under `/dashboard/courses` and role-conditioned detail actions if you want to keep the one-item sidebar rule
-
-Because the sidebar has only `My courses`, all deeper views should be entered from the main content area rather than extra sidebar items.
+- `/dashboard/courses/:courseId/homeworks/:homeworkId`
 
 ### App Shell
 
 Build one shared dashboard shell:
 
-- fixed or sticky left sidebar
-- top area with role/user summary and logout
-- main content panel on the right
-- responsive collapse for mobile widths
+- persistent left sidebar
+- right-side content area
+- sidebar remains visible while course detail pages render on the right
 
 Sidebar content:
 
 - logo / product label
-- `My courses`
-- user identity block at bottom or top
+- `My courses` top-level dropdown
+- collapsed by default
+- expanded state shows course links
+- user identity block
 
-### Auth Screens
-
-Create two polished minimal SaaS pages:
-
-- login
-- sign up
-
-Required UX:
-
-- email/password forms
-- Google sign-in button
-- role choice on sign-up only for student / teacher
-- if redirected from Google with unknown email:
-  - email field prefilled
-  - user completes remaining required fields
-
-### Role-Based Course Views
+### Course Views
 
 Student course list:
 
-- enrolled courses only
-- each course card or row should show:
+- show all courses in grid layout for now
+- each course card may show:
   - course title
   - teacher name
-  - assignment counts or recent activity if available
+  - homework count if available
 
 Teacher course list:
 
-- owned courses only
-- each course should surface:
-  - assignment count
+- show only teacher-owned courses
+- each course card may show:
+  - homework count
   - pending review count
-  - student count if available
-
-Admin course list:
-
-- all courses
-- should support create and edit actions from the main panel
-- teacher assignment must be part of course creation and editing
 
 ### Course Detail Views
 
 Student course detail:
 
-- list assignments in that course
-- each assignment row/card should show:
-  - assignment title
-  - evaluation mode
+- list homeworks in that course
+- each homework row/card should show:
+  - description
   - attempt usage such as `1/3`
   - latest status
   - latest score when graded
 
 Teacher course detail:
 
-- list assignments in that course
-- create assignment action
-- edit assignment action
-- entry point to see submissions per assignment
+- list homeworks in that course
+- show one `Add new homework` button
+- clicking the button opens a modal popup
+- modal fields for now:
+  - selected course
+  - description
+- each homework row should include an edit action
+- edit flow updates only the description
+- page should provide an entry point to see assignment attempts per homework
 
-Admin course detail:
+### Homework Creation UX
 
-- management-focused course summary
-- enrollment editing access
+- homework creation starts from a single add button
+- modal popup allows:
+  - course selection
+  - homework description input
+  - create action
+- after creation:
+  - refresh homework list
+  - close modal
+  - keep user in the dashboard layout
 
-### Assignment Detail / Submission UX
+### Assignment Views
 
-Student assignment detail:
+Student homework detail:
 
-- show assignment instructions
-- show evaluation mode
-- show attempts list
-- allow new attempt only when rules permit
-- submission form accepts:
-  - text
-  - image
-  - txt file
+- show homework description
+- show student assignment attempt history
+- allow creating a new assignment attempt when allowed
+- show attempt statuses and latest graded result
 
-Submit flow:
+Teacher homework detail:
 
-1. Student opens submission form or modal.
-2. Student submits attempt.
-3. Form closes immediately on successful API response.
-4. UI redirects or returns to assignment attempts list inside the current course context.
-5. New attempt appears with `processing`.
-6. Frontend polls for status changes until status becomes `review_pending` or `graded`.
+- show all assignment attempts for that homework
+- allow review/confirmation flow where applicable
 
-Teacher assignment/submission review:
+## Immediate Phase Scope
 
-- see all student attempts for assignment
-- see each attempt’s extracted text, original file when present, Gemini result, final result, and status
-- if status is `review_pending`, show editable score and feedback form
-- confirm action finalizes evaluation and changes status to `graded`
+This is the implementation slice to build next:
 
-### Admin Management UI
-
-Admin management is in scope even with the one-item sidebar rule, so place these actions inside the main dashboard area:
-
-- create/edit students
-- create/edit teachers
-- create/edit courses
-- create/edit enrollments
-
-Recommended pattern:
-
-- segmented tabs or top-level in-content switches within the main panel
-- keep the sidebar unchanged
-
-### Design System Direction
-
-Minimal SaaS implementation choices:
-
-- typography:
-  - clean sans serif with strong legibility
-- colors:
-  - neutral surfaces
-  - one restrained accent tone
-  - clear semantic colors for `processing`, `review_pending`, `graded`
-- components:
-  - compact sidebar
-  - soft cards
-  - simple bordered tables
-  - clear status badges
-  - focused forms with minimal decoration
-
-Avoid:
-
-- chalkboard, notebook, campus, or overly academic visual metaphors
-- heavy gradients and playful illustration clutter
-
-## Testing and Acceptance Criteria
-
-### Backend Tests
-
-Add unit and e2e coverage for the core rules:
-
-- auth:
-  - signup creates student/teacher only
-  - login succeeds with correct credentials
-  - duplicate email is rejected
-  - admin public signup is rejected
-- authorization:
-  - student cannot access teacher/admin actions
-  - teacher cannot edit another teacher’s course
-  - student cannot submit outside enrolled course
-- course and enrollment:
-  - course requires teacher assignment
-  - duplicate enrollment is rejected
-- submissions:
-  - first attempt succeeds
-  - fourth attempt is rejected
-  - next attempt is blocked while previous is `processing`
-  - next attempt is blocked while previous is `review_pending`
-  - next attempt allowed after previous is `graded`
-- evaluation:
-  - automatic mode moves from `processing` to `graded`
-  - partial mode moves from `processing` to `review_pending`
-  - teacher confirmation moves `review_pending` to `graded`
-  - teacher can edit both score and feedback before confirmation
-  - latest graded attempt is returned as final result
-
-### Frontend Scenarios
-
-- login and sign-up pages render and validate correctly
-- Google unknown-user redirect lands on sign-up with prefilled email
-- sidebar renders only `My courses`
-- student sees only enrolled courses
-- teacher sees only owned courses
-- admin sees manageable course list and admin actions
-- student can submit text, image, and txt file homework
-- submission success returns to assignment attempts view
-- `processing` status is visible immediately after submit
-- polling updates UI to `review_pending` or `graded`
-- teacher can confirm partial evaluation from review UI
-- latest graded attempt is visually surfaced as final result
-
-## Environment and Configuration Changes
-
-Backend `.env` should eventually support:
-
-- Postgres connection values
-- JWT secret and expiry settings
-- Google OAuth client configuration
-- Gemini API key and model configuration
-- uploads directory configuration if needed
-
-Keep the existing PostgreSQL factory approach and extend it instead of replacing it.
-
-## Assumptions Locked For V1
-
-- Public self-sign-up is allowed for students and teachers only.
-- Admin accounts are not created via the public sign-up page.
-- Uploads are stored locally on the backend server filesystem.
-- Frontend status refresh uses polling rather than SSE or WebSockets.
-- OCR uses `tesseract.js` as requested.
-- No lesson entity, no school management, no approval workflows, no plagiarism checks, and no failed submission status in v1.
+1. Add backend `courses`, `homeworks`, and `assignments` modules.
+2. Add course listing API with role-aware behavior:
+   - student gets all courses
+   - teacher gets owned courses
+3. Add homework creation and edit APIs.
+4. Replace mock homework creation on the frontend with real API calls.
+5. Add the sidebar dropdown behavior for `My courses`.
+6. Keep the course detail page rendered inside the shared dashboard layout.

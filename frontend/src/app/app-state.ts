@@ -3,7 +3,7 @@ import type {
   AuthProfile,
   Course,
   DraftSignup,
-  Submission,
+  Homework,
   SubmissionSourceType,
   TeacherEvaluationMode,
   User,
@@ -19,12 +19,13 @@ export const initialSignupDraft: DraftSignup = {
 export interface AppState {
   users: User[];
   courses: Course[];
+  homeworks: Homework[];
   assignments: Assignment[];
-  submissions: Submission[];
   currentUser: User | null;
   currentProfile: AuthProfile | null;
   authResolved: boolean;
   authError: string | null;
+  dataResolved: boolean;
   login: (payload: { email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
   signup: (draft: DraftSignup) => Promise<void>;
@@ -34,26 +35,26 @@ export interface AppState {
     password?: string;
     evaluationMode?: TeacherEvaluationMode;
   }) => Promise<void>;
-  createAdminUser: (draft: DraftSignup) => void;
-  createCourse: (draft: {
-    title: string;
-    description: string;
-    teacherId: string;
-  }) => void;
-  updateCourse: (courseId: string, draft: Partial<Course>) => void;
-  updateUser: (userId: string, draft: Partial<User>) => void;
-  toggleEnrollment: (courseId: string, studentId: string) => void;
   submitAssignment: (draft: {
-    assignmentId: string;
-    studentId: string;
+    homeworkId: number;
     sourceType: SubmissionSourceType;
     extractedText: string;
     originalText?: string;
     fileName?: string;
-  }) => Submission;
+  }) => Promise<Assignment>;
   confirmTeacherReview: (draft: {
-    submissionId: string;
+    assignmentId: number;
     finalScore: number;
     finalFeedback: string;
   }) => void;
+  createHomework: (draft: {
+    courseId: number;
+    description: string;
+  }) => Promise<Homework>;
+  createCourse: (draft: {
+    title: string;
+    description: string;
+  }) => Promise<Course>;
+  updateHomework: (homeworkId: number, draft: { description: string }) => Promise<Homework>;
+  refreshCourseData: () => Promise<void>;
 }

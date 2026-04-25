@@ -2,41 +2,39 @@ import { useState } from 'react';
 import type { AppState } from '../../app/app-state';
 import { trimToSixtyWords } from '../../app/helpers';
 import { EmptyState, StatusPill } from '../../components/ui';
-import type { Assignment, Submission, User } from '../../types';
+import type { Assignment, Homework, User } from '../../types';
 
 export function TeacherAssignmentView({
   appState,
-  assignment,
+  homework,
 }: {
   appState: AppState;
-  assignment: Assignment;
+  homework: Homework;
 }) {
-  const relevantSubmissions = appState.submissions
-    .filter((submission) => submission.assignmentId === assignment.id)
-    .sort((left, right) =>
-      right.submittedAt.localeCompare(left.submittedAt),
-    );
+  const relevantAssignments = appState.assignments
+    .filter((assignment) => assignment.homeworkId === homework.id)
+    .sort((left, right) => right.submittedAt.localeCompare(left.submittedAt));
 
   return (
     <div className="panel">
       <div className="panel__header">
         <h2>Student attempts</h2>
         <p>
-          Teachers can inspect all attempts in their course, review Gemini drafts,
-          and confirm the final score when the assignment uses partial evaluation.
+          Teachers can inspect all assignment attempts for this homework, review Gemini drafts,
+          and confirm the final score when needed.
         </p>
       </div>
 
       <div className="teacher-review-list">
-        {relevantSubmissions.length === 0 ? (
+        {relevantAssignments.length === 0 ? (
           <EmptyState
             title="No submissions yet"
-            description="Student work for this assignment will appear here."
+            description="Student work for this homework will appear here."
           />
         ) : (
-          relevantSubmissions.map((submission) => {
+          relevantAssignments.map((assignment) => {
             const student = appState.users.find(
-              (user) => user.id === submission.studentId,
+              (user) => user.id === assignment.studentId,
             );
 
             if (!student) {
@@ -47,8 +45,8 @@ export function TeacherAssignmentView({
               <TeacherReviewCard
                 appState={appState}
                 assignment={assignment}
-                key={submission.id}
-                submission={submission}
+                homework={homework}
+                key={assignment.id}
                 student={student}
               />
             );
@@ -62,19 +60,19 @@ export function TeacherAssignmentView({
 function TeacherReviewCard({
   appState,
   assignment,
-  submission,
+  homework,
   student,
 }: {
   appState: AppState;
   assignment: Assignment;
-  submission: Submission;
+  homework: Homework;
   student: User;
 }) {
   const [score, setScore] = useState(
-    String(submission.finalScore ?? submission.geminiScore ?? 0),
+    String(assignment.finalScore ?? assignment.geminiScore ?? 0),
   );
   const [feedback, setFeedback] = useState(
-    submission.finalFeedback ?? submission.geminiFeedback ?? '',
+    assignment.finalFeedback ?? assignment.geminiFeedback ?? '',
   );
 
   function handleConfirm() {
@@ -85,7 +83,7 @@ function TeacherReviewCard({
     }
 
     appState.confirmTeacherReview({
-      submissionId: submission.id,
+      assignmentId: assignment.id,
       finalScore: Math.min(10, Math.max(0, parsedScore)),
       finalFeedback: trimToSixtyWords(feedback),
     });
@@ -97,34 +95,34 @@ function TeacherReviewCard({
         <div>
           <strong>{student.fullName}</strong>
           <p>
-            Attempt {submission.attemptNumber} for {assignment.title}
+            Attempt {assignment.attemptNumber} for homework #{homework.id}
           </p>
         </div>
-        <StatusPill status={submission.status} />
+        <StatusPill status={assignment.status} />
       </header>
 
-      <p className="submission-card__text">{submission.extractedText}</p>
+      <p className="submission-card__text">{assignment.extractedText}</p>
 
       <dl className="submission-card__meta">
         <div>
           <dt>Gemini score</dt>
-          <dd>{submission.geminiScore ?? 'Pending'}</dd>
+          <dd>{assignment.geminiScore ?? 'Pending'}</dd>
         </div>
         <div>
-          <dt>Mode</dt>
-          <dd>{assignment.evaluationMode}</dd>
+          <dt>Homework</dt>
+          <dd>#{homework.id}</dd>
         </div>
         <div>
           <dt>Teacher edited</dt>
-          <dd>{submission.teacherEdited ? 'Yes' : 'No'}</dd>
+          <dd>{assignment.teacherEdited ? 'Yes' : 'No'}</dd>
         </div>
       </dl>
 
       <p className="submission-card__feedback">
-        {submission.geminiFeedback ?? 'Gemini is still producing the draft evaluation.'}
+        {assignment.geminiFeedback ?? 'Gemini is still producing the draft evaluation.'}
       </p>
 
-      {submission.status === 'review_pending' ? (
+      {assignment.status === 'review_pending' ? (
         <div className="review-form">
           <label>
             Final score
@@ -152,9 +150,9 @@ function TeacherReviewCard({
       ) : (
         <div className="final-review">
           <strong>
-            Final result: {submission.finalScore ?? submission.geminiScore}/10
+            Final result: {assignment.finalScore ?? assignment.geminiScore}/10
           </strong>
-          <p>{submission.finalFeedback ?? submission.geminiFeedback}</p>
+          <p>{assignment.finalFeedback ?? assignment.geminiFeedback}</p>
         </div>
       )}
     </article>

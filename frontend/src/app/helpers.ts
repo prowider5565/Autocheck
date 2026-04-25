@@ -2,103 +2,92 @@ import type {
   Assignment,
   AuthProfile,
   Course,
+  Homework,
   Role,
-  Submission,
   User,
 } from '../types';
 
-export function getVisibleCourses(currentUser: User, courses: Course[]) {
-  if (currentUser.role === 'admin') {
-    return courses;
-  }
+export const MAX_HOMEWORK_ATTEMPTS = 3;
 
+export function getVisibleCourses(currentUser: User, courses: Course[]) {
   if (currentUser.role === 'teacher') {
     return courses.filter((course) => course.teacherId === currentUser.id);
   }
 
-  return courses.filter((course) => course.studentIds.includes(currentUser.id));
+  return courses;
 }
 
 export function canAccessCourse(user: User, course: Course) {
-  if (user.role === 'admin') {
-    return true;
-  }
-
   if (user.role === 'teacher') {
     return course.teacherId === user.id;
   }
 
-  return course.studentIds.includes(user.id);
+  return true;
 }
 
 export function getCoursesTitle(role: Role) {
   if (role === 'student') {
-    return 'Courses you are enrolled in';
+    return 'All available courses';
   }
 
   if (role === 'teacher') {
     return 'Courses you own and manage';
   }
 
-  return 'Courses and admin controls';
+  return 'Course workspace';
 }
 
 export function getCoursesDescription(role: Role) {
   if (role === 'student') {
-    return 'Open a course to review assignments, submit homework, and monitor Gemini status updates.';
+    return 'Open a course to review homework descriptions, submit your work, and track evaluation updates.';
   }
 
   if (role === 'teacher') {
-    return 'Track submissions, inspect all attempts, and finalize partial Gemini reviews inside your courses.';
+    return 'Create homeworks, edit descriptions, and inspect student assignment attempts inside your courses.';
   }
 
-  return 'Manage teachers, students, courses, and enrollments from a single operational dashboard.';
+  return 'The current phase is focused on course and homework flows.';
 }
 
-export function getStudentAssignmentSubmissions(
-  submissions: Submission[],
-  assignmentId: string,
-  studentId: string,
+export function getStudentHomeworkAssignments(
+  assignments: Assignment[],
+  homeworkId: number,
+  studentId: number,
 ) {
-  return submissions
+  return assignments
     .filter(
-      (submission) =>
-        submission.assignmentId === assignmentId &&
-        submission.studentId === studentId,
+      (assignment) =>
+        assignment.homeworkId === homeworkId && assignment.studentId === studentId,
     )
     .sort((left, right) => left.attemptNumber - right.attemptNumber);
 }
 
-export function getLatestCourseSubmissionForStudent(
-  courseId: string,
-  studentId: string,
+export function getLatestCourseAssignmentForStudent(
+  courseId: number,
+  studentId: number,
+  homeworks: Homework[],
   assignments: Assignment[],
-  submissions: Submission[],
 ) {
-  const assignmentIds = assignments
-    .filter((assignment) => assignment.courseId === courseId)
-    .map((assignment) => assignment.id);
+  const homeworkIds = homeworks
+    .filter((homework) => homework.courseId === courseId)
+    .map((homework) => homework.id);
 
-  return submissions
+  return assignments
     .filter(
-      (submission) =>
-        assignmentIds.includes(submission.assignmentId) &&
-        submission.studentId === studentId,
+      (assignment) =>
+        homeworkIds.includes(assignment.homeworkId) &&
+        assignment.studentId === studentId,
     )
     .sort((left, right) => right.submittedAt.localeCompare(left.submittedAt))[0];
 }
 
-export function generateEvaluationDraft(
-  submission: Submission,
-  assignment: Assignment,
-) {
+export function generateEvaluationDraft(assignment: Assignment, homework: Homework) {
   const baseScore =
-    6.5 + (submission.attemptNumber % 3) + (submission.extractedText.length % 12) / 10;
+    6.5 +
+    (assignment.attemptNumber % 3) +
+    (assignment.extractedText.length % 12) / 10;
   const score = Math.min(10, Number(baseScore.toFixed(1)));
-  const feedbackSource =
-    assignment.evaluationMode === 'partial'
-      ? 'Solid draft. Tighten the explanation and make each step easier for the teacher to verify.'
-      : 'Clear response overall. Add one more precise detail to strengthen accuracy and completeness.';
+  const feedbackSource = `Solid response to the homework. Tighten the explanation and make the reasoning easier to verify. Homework context: ${homework.description}`;
 
   return {
     score,
@@ -134,6 +123,7 @@ export function mapProfileToCurrentUser(
   if (matchedDemoUser) {
     return {
       ...matchedDemoUser,
+      id: profile.id,
       fullName: profile.fullName,
       email: profile.email,
       role: profile.role,
@@ -141,7 +131,7 @@ export function mapProfileToCurrentUser(
   }
 
   return {
-    id: `api-user-${profile.id}`,
+    id: profile.id,
     fullName: profile.fullName,
     email: profile.email,
     role: profile.role,

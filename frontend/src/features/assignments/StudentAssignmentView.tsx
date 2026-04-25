@@ -1,19 +1,19 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { AppState } from '../../app/app-state';
-import { getStudentAssignmentSubmissions } from '../../app/helpers';
+import { MAX_HOMEWORK_ATTEMPTS, getStudentHomeworkAssignments } from '../../app/helpers';
 import { EmptyState } from '../../components/ui';
-import type { Assignment, Course, SubmissionSourceType } from '../../types';
+import type { Course, Homework, SubmissionSourceType } from '../../types';
 import { SubmissionCard } from '../shared/SubmissionCard';
 
 export function StudentAssignmentView({
   appState,
-  assignment,
   course,
+  homework,
 }: {
   appState: AppState;
-  assignment: Assignment;
   course: Course;
+  homework: Homework;
 }) {
   const navigate = useNavigate();
   const student = appState.currentUser;
@@ -40,16 +40,17 @@ export function StudentAssignmentView({
     return null;
   }
 
-  const studentId = student.id;
-  const submissions = getStudentAssignmentSubmissions(
-    appState.submissions,
-    assignment.id,
-    studentId,
+  const currentStudent = student;
+
+  const studentAssignments = getStudentHomeworkAssignments(
+    appState.assignments,
+    homework.id,
+    currentStudent.id,
   );
-  const latestSubmission = submissions[submissions.length - 1];
+  const latestAssignment = studentAssignments[studentAssignments.length - 1];
   const canSubmit =
-    submissions.length < assignment.maxAttempts &&
-    (!latestSubmission || latestSubmission.status === 'graded');
+    studentAssignments.length < MAX_HOMEWORK_ATTEMPTS &&
+    (!latestAssignment || latestAssignment.status === 'graded');
 
   async function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -73,7 +74,7 @@ export function StudentAssignmentView({
     );
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!canSubmit) {
@@ -88,25 +89,32 @@ export function StudentAssignmentView({
       return;
     }
 
-    appState.submitAssignment({
-      assignmentId: assignment.id,
-      studentId,
-      sourceType,
-      extractedText: normalizedText,
-      originalText: sourceType === 'text' ? textValue.trim() : undefined,
-      fileName: sourceType === 'text' ? undefined : fileName,
-    });
+    try {
+      await appState.submitAssignment({
+        homeworkId: homework.id,
+        sourceType,
+        extractedText: normalizedText,
+        originalText: sourceType === 'text' ? textValue.trim() : undefined,
+        fileName: sourceType === 'text' ? undefined : fileName,
+      });
 
-    setTextValue('');
-    setFileName('');
-    setExtractedText('');
-    setStatusMessage(
-      'Attempt submitted. You are being returned to the course assignment list while Gemini processes the result.',
-    );
+      setTextValue('');
+      setFileName('');
+      setExtractedText('');
+      setStatusMessage(
+        'Attempt submitted and evaluated by Gemini. You are being returned to the course homework list.',
+      );
 
-    window.setTimeout(() => {
-      navigate(`/dashboard/courses/${course.id}`);
-    }, 500);
+      window.setTimeout(() => {
+        navigate(`/dashboard/courses/${course.id}`);
+      }, 500);
+    } catch (caughtError) {
+      setStatusMessage(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'Unable to submit the homework right now.',
+      );
+    }
   }
 
   return (
@@ -116,7 +124,7 @@ export function StudentAssignmentView({
           <h2>Submit a new attempt</h2>
           <p>
             Students can only send the next attempt after the previous one is fully
-            graded. Latest graded result becomes the final visible score.
+            graded. The latest graded result becomes the visible score.
           </p>
         </div>
 
@@ -124,12 +132,12 @@ export function StudentAssignmentView({
           <label>
             Submission type
             <select
-              value={sourceType}
               onChange={(event) => {
                 setSourceType(event.target.value as SubmissionSourceType);
                 setFileName('');
                 setExtractedText('');
               }}
+              value={sourceType}
             >
               <option value="text">Direct text</option>
               <option value="image">Image upload</option>
@@ -141,10 +149,10 @@ export function StudentAssignmentView({
             <label>
               Submission text
               <textarea
+                onChange={(event) => setTextValue(event.target.value)}
                 placeholder="Write your homework response here..."
                 rows={8}
                 value={textValue}
-                onChange={(event) => setTextValue(event.target.value)}
               />
             </label>
           ) : (
@@ -161,7 +169,7 @@ export function StudentAssignmentView({
           {sourceType !== 'text' && extractedText ? (
             <label>
               Extracted text preview
-              <textarea rows={6} value={extractedText} readOnly />
+              <textarea readOnly rows={6} value={extractedText} />
             </label>
           ) : null}
 
@@ -171,9 +179,9 @@ export function StudentAssignmentView({
             Submit attempt
           </button>
 
-          {!canSubmit && latestSubmission ? (
+          {!canSubmit && latestAssignment ? (
             <p className="inline-message inline-message--warning">
-              Attempt {latestSubmission.attemptNumber} is still {latestSubmission.status}.
+              Attempt {latestAssignment.attemptNumber} is still {latestAssignment.status}.
               Wait for evaluation before sending the next one.
             </p>
           ) : null}
@@ -187,17 +195,17 @@ export function StudentAssignmentView({
         </div>
 
         <div className="attempt-list">
-          {submissions.length === 0 ? (
+          {studentAssignments.length === 0 ? (
             <EmptyState
               title="No attempts yet"
               description="Your first upload will appear here with a processing status."
             />
           ) : (
-            submissions.map((submission) => (
+            studentAssignments.map((assignment) => (
               <SubmissionCard
-                key={submission.id}
-                student={student}
-                submission={submission}
+                assignment={assignment}
+                key={assignment.id}
+                student={currentStudent}
               />
             ))
           )}

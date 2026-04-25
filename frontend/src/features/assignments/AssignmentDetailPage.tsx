@@ -1,24 +1,30 @@
 import { Link, useParams } from 'react-router-dom';
 import type { AppState } from '../../app/app-state';
-import { canAccessCourse } from '../../app/helpers';
+import { MAX_HOMEWORK_ATTEMPTS, canAccessCourse } from '../../app/helpers';
 import { MetricCard, NotFoundState, PageHeading } from '../../components/ui';
 import { StudentAssignmentView } from './StudentAssignmentView';
 import { TeacherAssignmentView } from './TeacherAssignmentView';
 
 export function AssignmentDetailPage({ appState }: { appState: AppState }) {
-  const { assignmentId, courseId } = useParams();
+  const { homeworkId, courseId } = useParams();
   const { currentUser } = appState;
 
-  if (!currentUser || !assignmentId || !courseId) {
+  if (!currentUser || !homeworkId || !courseId) {
     return null;
   }
 
-  const assignment = appState.assignments.find((item) => item.id === assignmentId);
-  const course = appState.courses.find((item) => item.id === courseId);
+  const parsedHomeworkId = Number(homeworkId);
+  const parsedCourseId = Number(courseId);
+  const homework = appState.homeworks.find((item) => item.id === parsedHomeworkId);
+  const course = appState.courses.find((item) => item.id === parsedCourseId);
 
-  if (!assignment || !course || !canAccessCourse(currentUser, course)) {
-    return <NotFoundState message="This assignment is not available for your account." />;
+  if (!homework || !course || !canAccessCourse(currentUser, course)) {
+    return <NotFoundState message="This homework is not available for your account." />;
   }
+
+  const homeworkAssignments = appState.assignments.filter(
+    (assignment) => assignment.homeworkId === homework.id,
+  );
 
   return (
     <div className="page-stack">
@@ -27,37 +33,29 @@ export function AssignmentDetailPage({ appState }: { appState: AppState }) {
       </Link>
 
       <PageHeading
-        eyebrow="Assignment"
-        title={assignment.title}
-        description={assignment.instructions}
+        eyebrow="Homework"
+        title={`Homework #${homework.id}`}
+        description={homework.description}
       />
 
       <div className="hero-stats hero-stats--compact">
         <MetricCard
-          label="Evaluation mode"
-          value={assignment.evaluationMode}
-          hint="Automatic or teacher review"
-        />
-        <MetricCard
           label="Attempt cap"
-          value={String(assignment.maxAttempts)}
+          value={String(MAX_HOMEWORK_ATTEMPTS)}
           hint="Per student"
         />
         <MetricCard
-          label="Polling"
-          value="4s"
-          hint="Frontend refresh rhythm for v1"
+          label="Attempts"
+          value={String(homeworkAssignments.length)}
+          hint="Tracked student submissions"
         />
+        <MetricCard label="Polling" value="4s" hint="Frontend refresh rhythm for v1" />
       </div>
 
       {currentUser.role === 'student' ? (
-        <StudentAssignmentView
-          appState={appState}
-          assignment={assignment}
-          course={course}
-        />
+        <StudentAssignmentView appState={appState} course={course} homework={homework} />
       ) : (
-        <TeacherAssignmentView appState={appState} assignment={assignment} />
+        <TeacherAssignmentView appState={appState} homework={homework} />
       )}
     </div>
   );
