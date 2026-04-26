@@ -12,17 +12,16 @@ export function DashboardLayout({ appState }: { appState: AppState }) {
   const [coursesOpen, setCoursesOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
-
-  if (!currentUser || !currentProfile) {
-    return null;
-  }
-
   const visibleCourses = useMemo(
-    () => getVisibleCourses(currentUser, appState.courses),
+    () => (currentUser ? getVisibleCourses(currentUser, appState.courses) : []),
     [appState.courses, currentUser],
   );
   const activeCourses = useMemo(() => getActiveCourses(visibleCourses), [visibleCourses]);
   const archivedCourses = useMemo(() => getArchivedCourses(visibleCourses), [visibleCourses]);
+
+  if (!currentUser || !currentProfile) {
+    return null;
+  }
 
   async function handleLogout() {
     setLogoutBusy(true);
