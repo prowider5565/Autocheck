@@ -6,10 +6,11 @@ import type {
   Homework,
   TeacherEvaluationMode,
 } from './types';
+import { buildBackendUrl } from './config';
 
-const USERS_API_BASE = '/api/users';
-const COURSES_API_BASE = '/api/courses';
-const HOMEWORKS_API_BASE = '/api/homeworks';
+const USERS_API_BASE = buildBackendUrl('/api/users');
+const COURSES_API_BASE = buildBackendUrl('/api/courses');
+const HOMEWORKS_API_BASE = buildBackendUrl('/api/homeworks');
 
 async function parseJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
@@ -200,7 +201,7 @@ export async function updateHomework(payload: {
 export async function fetchHomeworkAssignments(
   homeworkId: number,
 ): Promise<Assignment[]> {
-  const response = await fetch(`/api/homeworks/${homeworkId}/assignments`, {
+  const response = await fetch(buildBackendUrl(`/api/homeworks/${homeworkId}/assignments`), {
     credentials: 'include',
   });
 
@@ -214,7 +215,7 @@ export async function submitAssignment(payload: {
   originalText?: string;
   fileName?: string;
 }): Promise<Assignment> {
-  const response = await fetch(`/api/homeworks/${payload.homeworkId}/assignments`, {
+  const response = await fetch(buildBackendUrl(`/api/homeworks/${payload.homeworkId}/assignments`), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -236,7 +237,7 @@ export async function confirmAssignmentReview(payload: {
   finalScore: number;
   finalFeedback: string;
 }): Promise<Assignment> {
-  const response = await fetch(`/api/assignments/${payload.assignmentId}/confirm`, {
+  const response = await fetch(buildBackendUrl(`/api/assignments/${payload.assignmentId}/confirm`), {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
