@@ -114,9 +114,13 @@ export class UsersController {
   @Post('auth/logout')
   @HttpCode(200)
   logout(@Res({ passthrough: true }) response: Response) {
-    response.clearCookie(appConfigFactory(this.configService).authCookieName, {
+    const appConfig = appConfigFactory(this.configService);
+
+    response.clearCookie(appConfig.authCookieName, {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: appConfig.authCookieSameSite,
+      secure: appConfig.authCookieSecure,
+      path: '/',
     });
 
     return { success: true };
@@ -156,8 +160,8 @@ export class UsersController {
 
     response.cookie(appConfig.authCookieName, token, {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: false,
+      sameSite: appConfig.authCookieSameSite,
+      secure: appConfig.authCookieSecure,
       path: '/',
     });
   }
