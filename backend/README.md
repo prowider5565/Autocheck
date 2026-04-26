@@ -46,6 +46,26 @@ docker compose down
 
 The backend container uses [backend/.env.docker](/home/mateo/Public/Autocheck/backend/.env.docker) for its runtime configuration.
 
+Authentication cookie behavior is controlled by env vars:
+
+- `AUTH_COOKIE_NAME`
+- `AUTH_COOKIE_SECURE`
+- `AUTH_COOKIE_SAME_SITE`
+
+For local development on `http://localhost`, a common setup is:
+
+```env
+AUTH_COOKIE_SECURE=false
+AUTH_COOKIE_SAME_SITE=lax
+```
+
+For production when the frontend and backend run on different HTTPS origins, use:
+
+```env
+AUTH_COOKIE_SECURE=true
+AUTH_COOKIE_SAME_SITE=none
+```
+
 Available endpoints after startup:
 
 - API: `http://localhost:3000/api`
