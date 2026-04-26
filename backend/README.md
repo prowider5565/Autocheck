@@ -48,6 +48,7 @@ The backend container uses [backend/.env.docker](/home/mateo/Public/Autocheck/ba
 
 Authentication cookie behavior is controlled by env vars:
 
+- `AUTH_LOGGING_ENABLED`
 - `AUTH_COOKIE_NAME`
 - `AUTH_COOKIE_SECURE`
 - `AUTH_COOKIE_SAME_SITE`
@@ -64,6 +65,18 @@ For production when the frontend and backend run on different HTTPS origins, use
 ```env
 AUTH_COOKIE_SECURE=true
 AUTH_COOKIE_SAME_SITE=none
+```
+
+To emit Google auth and cookie-flow debugging logs to standard output, enable:
+
+```env
+AUTH_LOGGING_ENABLED=true
+```
+
+These logs are visible through Docker container logs, for example:
+
+```bash
+docker logs -f autocheck-backend
 ```
 
 Available endpoints after startup:

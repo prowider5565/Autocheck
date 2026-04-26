@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  Logger,
   Patch,
   Post,
   Req,
@@ -35,6 +36,8 @@ interface GoogleRequest extends Request {
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
+  private readonly logger = new Logger(UsersController.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
@@ -75,7 +78,11 @@ export class UsersController {
 
   @Get('auth/google')
   @UseGuards(GoogleAuthGuard)
-  startGoogleAuth(): void {}
+  startGoogleAuth(@Req() request: Request): void {
+    this.logAuthEvent(
+      `Starting Google OAuth flow from ${this.getRequestSource(request)}`,
+    );
+  }
 
   @Get('auth/google/callback')
   @UseGuards(GoogleAuthGuard)
@@ -83,6 +90,10 @@ export class UsersController {
     @Req() request: GoogleRequest,
     @Res() response: Response,
   ): Promise<void> {
+    this.logAuthEvent(
+      `Received Google OAuth callback with code=${this.hasQueryParam(request, 'code')} error=${this.hasQueryParam(request, 'error')}`,
+    );
+
     const googleEmail = this.usersService.ensureGoogleEmail(
       request.user?.emails?.[0]?.value,
     );
@@ -90,7 +101,14 @@ export class UsersController {
       appConfigFactory(this.configService).frontendUrl.replace(/\/$/, '');
     const redirectTarget = await this.usersService.getGoogleRedirect(googleEmail);
 
+    this.logAuthEvent(
+      `Google OAuth callback resolved for ${this.maskEmail(googleEmail)} with redirect target ${redirectTarget}`,
+    );
+
     if (redirectTarget === 'signup') {
+      this.logAuthEvent(
+        `Redirecting ${this.maskEmail(googleEmail)} to frontend signup`,
+      );
       response.redirect(
         `${frontendUrl}/signup?email=${encodeURIComponent(googleEmail)}&google=1`,
       );
@@ -108,6 +126,9 @@ export class UsersController {
       role: user.role,
     });
 
+    this.logAuthEvent(
+      `Redirecting ${this.maskEmail(googleEmail)} to frontend dashboard`,
+    );
     response.redirect(`${frontendUrl}/dashboard/courses`);
   }
 
@@ -115,6 +136,10 @@ export class UsersController {
   @HttpCode(200)
   logout(@Res({ passthrough: true }) response: Response) {
     const appConfig = appConfigFactory(this.configService);
+
+    this.logAuthEvent(
+      `Clearing auth cookie with SameSite=${appConfig.authCookieSameSite} Secure=${appConfig.authCookieSecure}`,
+    );
 
     response.clearCookie(appConfig.authCookieName, {
       httpOnly: true,
@@ -158,11 +183,48 @@ export class UsersController {
       expiresIn: appConfig.jwtExpiresIn as SignOptions['expiresIn'],
     });
 
+    this.logAuthEvent(
+      `Setting auth cookie for user ${payload.sub} with SameSite=${appConfig.authCookieSameSite} Secure=${appConfig.authCookieSecure}`,
+    );
+
     response.cookie(appConfig.authCookieName, token, {
       httpOnly: true,
       sameSite: appConfig.authCookieSameSite,
       secure: appConfig.authCookieSecure,
       path: '/',
     });
+  }
+
+  private logAuthEvent(message: string) {
+    if (!appConfigFactory(this.configService).authLoggingEnabled) {
+      return;
+    }
+
+    this.logger.log(message);
+  }
+
+  private maskEmail(email?: string): string {
+    if (!email) {
+      return 'unknown-email';
+    }
+
+    const [localPart, domain] = email.split('@');
+
+    if (!domain) {
+      return 'invalid-email';
+    }
+
+    return `${localPart.slice(0, 2)}***@${domain}`;
+  }
+
+  private hasQueryParam(request: Request, key: string): boolean {
+    return request.query[key] != null;
+  }
+
+  private getRequestSource(request: Request): string {
+    const origin = request.get('origin');
+    const referer = request.get('referer');
+
+    return origin ?? referer ?? 'unknown-source';
   }
 }

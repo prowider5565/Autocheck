@@ -5,6 +5,7 @@ export interface AppConfig {
   environment: string;
   jwtSecret: string;
   jwtExpiresIn: string;
+  authLoggingEnabled: boolean;
   authCookieName: string;
   authCookieSecure: boolean;
   authCookieSameSite: 'lax' | 'strict' | 'none';
@@ -29,6 +30,10 @@ export const appConfigFactory = (config: ConfigService): AppConfig => ({
   environment: config.get<string>('ENVIRONMENT') ?? 'dev',
   jwtSecret: config.get<string>('JWT_SECRET') ?? 'change-me',
   jwtExpiresIn: config.get<string>('JWT_EXPIRES_IN') ?? '7d',
+  authLoggingEnabled: parseBoolean(
+    config.get<string>('AUTH_LOGGING_ENABLED'),
+    false,
+  ),
   authCookieName: config.get<string>('AUTH_COOKIE_NAME') ?? 'autocheck_auth',
   authCookieSecure: parseBoolean(
     config.get<string>('AUTH_COOKIE_SECURE'),
