@@ -13,14 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly usersService: UsersService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        (request: { cookies?: Record<string, string> }) => {
-          const cookieName =
-            configService.get<string>('AUTH_COOKIE_NAME') ?? 'autocheck_auth';
-
-          return request.cookies?.[cookieName] ?? null;
-        },
-      ]),
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('JWT_SECRET') ?? 'change-me',
     });

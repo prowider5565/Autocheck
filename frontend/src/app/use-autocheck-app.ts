@@ -15,6 +15,7 @@ import {
   updateHomework as updateHomeworkRequest,
   updateProfile,
 } from '../authApi';
+import { clearAccessToken, consumeAccessTokenFromUrl, hasAccessToken } from '../authSession';
 import { demoUsers } from '../mockData';
 import type { Assignment, Homework, User } from '../types';
 import type { AppState } from './app-state';
@@ -39,6 +40,14 @@ export function useAutocheckApp(): AppState {
     let active = true;
 
     async function restoreSession() {
+      consumeAccessTokenFromUrl();
+
+      if (!hasAccessToken()) {
+        setCurrentProfile(null);
+        setAuthResolved(true);
+        return;
+      }
+
       try {
         const profile = await fetchProfile();
 
@@ -53,6 +62,7 @@ export function useAutocheckApp(): AppState {
           return;
         }
 
+        clearAccessToken();
         setCurrentProfile(null);
       } finally {
         if (active) {
@@ -114,6 +124,11 @@ export function useAutocheckApp(): AppState {
       } catch (caughtError) {
         if (!active) {
           return;
+        }
+
+        if (caughtError instanceof Error && caughtError.message === 'Unauthorized') {
+          clearAccessToken();
+          setCurrentProfile(null);
         }
 
         setAuthError(

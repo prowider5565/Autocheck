@@ -77,7 +77,7 @@ export function SplashScreen() {
       <section className="auth-hero auth-hero--compact">
         <span className="section-tag">Sessiya tekshirilmoqda</span>
         <h1>Ish maydoni yuklanmoqda...</h1>
-        <p>Frontend auth cookie orqali backenddan joriy profil ma'lumotlarini so'ramoqda.</p>
+        <p>Frontend bearer token orqali backenddan joriy profil ma'lumotlarini so'ramoqda.</p>
       </section>
     </div>
   );

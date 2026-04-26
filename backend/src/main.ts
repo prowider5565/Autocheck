@@ -2,7 +2,6 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import cookieParser from 'cookie-parser';
 import { ConfigService } from '@nestjs/config';
 import { appConfigFactory } from './config/app.config';
 
@@ -12,7 +11,6 @@ async function bootstrap() {
   const appConfig = appConfigFactory(configService);
 
   app.setGlobalPrefix('api');
-  app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -29,7 +27,7 @@ async function bootstrap() {
     .setTitle('My API')
     .setDescription('API documentation')
     .setVersion('1.0')
-    .addCookieAuth(appConfig.authCookieName)
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

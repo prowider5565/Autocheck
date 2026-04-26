@@ -13,12 +13,13 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { ApiCookieAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import type { SignOptions } from 'jsonwebtoken';
 import type { Profile } from 'passport-google-oauth20';
 import { appConfigFactory } from '../config/app.config';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { AuthResponseDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { ProfileDto, StudentProfileDto, TeacherProfileDto } from './dto/profile.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -47,33 +48,27 @@ export class UsersController {
   @Post('auth/register')
   async register(
     @Body() payload: RegisterDto,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<ProfileDto> {
+  ): Promise<AuthResponseDto> {
     const profile = await this.usersService.register(payload);
 
-    this.setAuthCookie(response, {
+    return this.buildAuthResponse(profile, {
       sub: profile.id,
       role: profile.role,
     });
-
-    return profile;
   }
 
   @Post('auth/login')
   @HttpCode(200)
   async login(
     @Body() payload: LoginDto,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<ProfileDto> {
+  ): Promise<AuthResponseDto> {
     const user = await this.usersService.validateCredentials(payload);
     const profile = this.usersService.toProfileDto(user);
 
-    this.setAuthCookie(response, {
+    return this.buildAuthResponse(profile, {
       sub: user.id,
       role: user.role,
     });
-
-    return profile;
   }
 
   @Get('auth/google')
@@ -121,39 +116,27 @@ export class UsersController {
       throw new UnauthorizedException('Google account could not be resolved.');
     }
 
-    this.setAuthCookie(response, {
+    const accessToken = this.signToken({
       sub: user.id,
       role: user.role,
     });
 
     this.logAuthEvent(
-      `Redirecting ${this.maskEmail(googleEmail)} to frontend dashboard`,
+      `Redirecting ${this.maskEmail(googleEmail)} to frontend dashboard with bearer token`,
     );
-    response.redirect(`${frontendUrl}/dashboard/courses`);
+    response.redirect(this.buildFrontendRedirect(`${frontendUrl}/dashboard/courses`, accessToken));
   }
 
   @Post('auth/logout')
   @HttpCode(200)
-  logout(@Res({ passthrough: true }) response: Response) {
-    const appConfig = appConfigFactory(this.configService);
-
-    this.logAuthEvent(
-      `Clearing auth cookie with SameSite=${appConfig.authCookieSameSite} Secure=${appConfig.authCookieSecure}`,
-    );
-
-    response.clearCookie(appConfig.authCookieName, {
-      httpOnly: true,
-      sameSite: appConfig.authCookieSameSite,
-      secure: appConfig.authCookieSecure,
-      path: '/',
-    });
-
+  logout() {
+    this.logAuthEvent('Logout request acknowledged for bearer-token session');
     return { success: true };
   }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  @ApiCookieAuth()
+  @ApiBearerAuth()
   @ApiOkResponse({
     schema: {
       oneOf: [
@@ -168,7 +151,7 @@ export class UsersController {
 
   @Patch('me')
   @UseGuards(JwtAuthGuard)
-  @ApiCookieAuth()
+  @ApiBearerAuth()
   updateProfile(
     @CurrentUser() user: Users,
     @Body() payload: UpdateProfileDto,
@@ -176,22 +159,22 @@ export class UsersController {
     return this.usersService.updateProfile(user.id, payload);
   }
 
-  private setAuthCookie(response: Response, payload: JwtPayload) {
+  private buildAuthResponse(
+    profile: ProfileDto,
+    payload: JwtPayload,
+  ): AuthResponseDto {
+    return {
+      accessToken: this.signToken(payload),
+      profile,
+    };
+  }
+
+  private signToken(payload: JwtPayload): string {
     const appConfig = appConfigFactory(this.configService);
-    const token = this.jwtService.sign(payload, {
+
+    return this.jwtService.sign(payload, {
       secret: appConfig.jwtSecret,
       expiresIn: appConfig.jwtExpiresIn as SignOptions['expiresIn'],
-    });
-
-    this.logAuthEvent(
-      `Setting auth cookie for user ${payload.sub} with SameSite=${appConfig.authCookieSameSite} Secure=${appConfig.authCookieSecure}`,
-    );
-
-    response.cookie(appConfig.authCookieName, token, {
-      httpOnly: true,
-      sameSite: appConfig.authCookieSameSite,
-      secure: appConfig.authCookieSecure,
-      path: '/',
     });
   }
 
@@ -226,5 +209,12 @@ export class UsersController {
     const referer = request.get('referer');
 
     return origin ?? referer ?? 'unknown-source';
+  }
+
+  private buildFrontendRedirect(targetUrl: string, accessToken: string): string {
+    const url = new URL(targetUrl);
+    url.searchParams.set('token', accessToken);
+
+    return url.toString();
   }
 }

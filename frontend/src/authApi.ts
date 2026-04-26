@@ -1,11 +1,13 @@
 import type {
   Assignment,
   AuthProfile,
+  AuthSession,
   Course,
   DraftSignup,
   Homework,
   TeacherEvaluationMode,
 } from './types';
+import { clearAccessToken, getAccessToken, setAccessToken } from './authSession';
 import { buildBackendUrl } from './config';
 
 const USERS_API_BASE = buildBackendUrl('/api/users');
@@ -34,9 +36,21 @@ async function parseJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
 
+function buildAuthHeaders(): HeadersInit {
+  const accessToken = getAccessToken();
+
+  if (!accessToken) {
+    return {};
+  }
+
+  return {
+    Authorization: `Bearer ${accessToken}`,
+  };
+}
+
 export async function fetchProfile(): Promise<AuthProfile> {
   const response = await fetch(`${USERS_API_BASE}/me`, {
-    credentials: 'include',
+    headers: buildAuthHeaders(),
   });
 
   return parseJson<AuthProfile>(response);
@@ -51,11 +65,13 @@ export async function login(payload: {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify(payload),
   });
 
-  return parseJson<AuthProfile>(response);
+  const session = await parseJson<AuthSession>(response);
+  setAccessToken(session.accessToken);
+
+  return session.profile;
 }
 
 export async function register(payload: DraftSignup): Promise<AuthProfile> {
@@ -64,18 +80,22 @@ export async function register(payload: DraftSignup): Promise<AuthProfile> {
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify(payload),
   });
 
-  return parseJson<AuthProfile>(response);
+  const session = await parseJson<AuthSession>(response);
+  setAccessToken(session.accessToken);
+
+  return session.profile;
 }
 
 export async function logout(): Promise<void> {
   const response = await fetch(`${USERS_API_BASE}/auth/logout`, {
     method: 'POST',
-    credentials: 'include',
+    headers: buildAuthHeaders(),
   });
+
+  clearAccessToken();
 
   if (!response.ok) {
     throw new Error("Hozir tizimdan chiqib bo'lmadi.");
@@ -96,8 +116,8 @@ export async function updateProfile(payload: {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      ...buildAuthHeaders(),
     },
-    credentials: 'include',
     body: JSON.stringify(payload),
   });
 
@@ -106,7 +126,7 @@ export async function updateProfile(payload: {
 
 export async function fetchCourses(): Promise<Course[]> {
   const response = await fetch(COURSES_API_BASE, {
-    credentials: 'include',
+    headers: buildAuthHeaders(),
   });
 
   return parseJson<Course[]>(response);
@@ -120,8 +140,8 @@ export async function createCourse(payload: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...buildAuthHeaders(),
     },
-    credentials: 'include',
     body: JSON.stringify(payload),
   });
 
@@ -130,7 +150,7 @@ export async function createCourse(payload: {
 
 export async function fetchCourse(courseId: number): Promise<Course> {
   const response = await fetch(`${COURSES_API_BASE}/${courseId}`, {
-    credentials: 'include',
+    headers: buildAuthHeaders(),
   });
 
   return parseJson<Course>(response);
@@ -144,8 +164,8 @@ export async function archiveCourse(payload: {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      ...buildAuthHeaders(),
     },
-    credentials: 'include',
     body: JSON.stringify({
       isArchived: payload.isArchived,
     }),
@@ -156,7 +176,7 @@ export async function archiveCourse(payload: {
 
 export async function fetchCourseHomeworks(courseId: number): Promise<Homework[]> {
   const response = await fetch(`${COURSES_API_BASE}/${courseId}/homeworks`, {
-    credentials: 'include',
+    headers: buildAuthHeaders(),
   });
 
   return parseJson<Homework[]>(response);
@@ -170,8 +190,8 @@ export async function createHomework(payload: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...buildAuthHeaders(),
     },
-    credentials: 'include',
     body: JSON.stringify({
       description: payload.description,
     }),
@@ -188,8 +208,8 @@ export async function updateHomework(payload: {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      ...buildAuthHeaders(),
     },
-    credentials: 'include',
     body: JSON.stringify({
       description: payload.description,
     }),
@@ -202,7 +222,7 @@ export async function fetchHomeworkAssignments(
   homeworkId: number,
 ): Promise<Assignment[]> {
   const response = await fetch(buildBackendUrl(`/api/homeworks/${homeworkId}/assignments`), {
-    credentials: 'include',
+    headers: buildAuthHeaders(),
   });
 
   return parseJson<Assignment[]>(response);
@@ -219,8 +239,8 @@ export async function submitAssignment(payload: {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      ...buildAuthHeaders(),
     },
-    credentials: 'include',
     body: JSON.stringify({
       sourceType: payload.sourceType,
       extractedText: payload.extractedText,
@@ -241,8 +261,8 @@ export async function confirmAssignmentReview(payload: {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
+      ...buildAuthHeaders(),
     },
-    credentials: 'include',
     body: JSON.stringify({
       finalScore: payload.finalScore,
       finalFeedback: payload.finalFeedback,

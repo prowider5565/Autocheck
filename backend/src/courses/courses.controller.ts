@@ -8,7 +8,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../users/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { Users } from '../users/users.entity';
@@ -18,7 +18,7 @@ import { CourseResponseDto } from './dto/course-response.dto';
 import { UpdateCourseArchiveDto } from './dto/update-course-archive.dto';
 
 @ApiTags('courses')
-@ApiCookieAuth()
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('courses')
 export class CoursesController {

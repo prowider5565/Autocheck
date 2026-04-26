@@ -77,3 +77,8 @@ export interface AuthTeacherProfile {
 }
 
 export type AuthProfile = AuthStudentProfile | AuthTeacherProfile;
+
+export interface AuthSession {
+  accessToken: string;
+  profile: AuthProfile;
+}

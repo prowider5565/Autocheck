@@ -8,7 +8,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../users/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../users/guards/jwt-auth.guard';
 import { Users } from '../users/users.entity';
@@ -18,7 +18,7 @@ import { ConfirmAssignmentReviewDto } from './dto/confirm-assignment-review.dto'
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
 
 @ApiTags('assignments')
-@ApiCookieAuth()
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller()
 export class AssignmentsController {

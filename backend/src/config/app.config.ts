@@ -6,9 +6,6 @@ export interface AppConfig {
   jwtSecret: string;
   jwtExpiresIn: string;
   authLoggingEnabled: boolean;
-  authCookieName: string;
-  authCookieSecure: boolean;
-  authCookieSameSite: 'lax' | 'strict' | 'none';
   frontendUrl: string;
   geminiApiKey: string;
   geminiModel: string;
@@ -34,19 +31,6 @@ export const appConfigFactory = (config: ConfigService): AppConfig => ({
     config.get<string>('AUTH_LOGGING_ENABLED'),
     false,
   ),
-  authCookieName: config.get<string>('AUTH_COOKIE_NAME') ?? 'autocheck_auth',
-  authCookieSecure: parseBoolean(
-    config.get<string>('AUTH_COOKIE_SECURE'),
-    (config.get<string>('FRONTEND_URL') ?? 'http://localhost:5173').startsWith('https://'),
-  ),
-  authCookieSameSite:
-    (config.get<string>('AUTH_COOKIE_SAME_SITE') as 'lax' | 'strict' | 'none' | undefined) ??
-    (parseBoolean(
-      config.get<string>('AUTH_COOKIE_SECURE'),
-      (config.get<string>('FRONTEND_URL') ?? 'http://localhost:5173').startsWith('https://'),
-    )
-      ? 'none'
-      : 'lax'),
   frontendUrl: config.get<string>('FRONTEND_URL') ?? 'http://localhost:5173',
   geminiApiKey: config.get<string>('GEMINI_API_KEY') ?? '',
   geminiModel:
