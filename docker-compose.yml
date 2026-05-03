@@ -7,9 +7,6 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/.env.docker
-    depends_on:
-      postgres:
-        condition: service_healthy
     ports:
       - "8484:8484"
 
