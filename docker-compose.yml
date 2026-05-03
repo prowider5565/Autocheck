@@ -9,6 +9,10 @@ services:
       - ./backend/.env.docker
     ports:
       - "8484:8484"
+    networks:
+      - autocheck_network
 
-volumes:
-  postgres_data:
+networks:
+  autocheck_network:
+    external: true
+    name: bridge
