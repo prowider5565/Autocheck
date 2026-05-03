@@ -10,9 +10,8 @@ services:
     ports:
       - "8484:8484"
     networks:
-      - autocheck_network
+      - shared-postgres-network
 
 networks:
-  autocheck_network:
+  shared-postgres-network:
     external: true
-    name: bridge
